@@ -222,6 +222,7 @@ class PowerPoint2007 implements ReaderInterface
                 '/cp:coreProperties/cp:category' => 'setCategory',
                 '/cp:coreProperties/dcterms:created' => 'setCreated',
                 '/cp:coreProperties/dcterms:modified' => 'setModified',
+                '/cp:coreProperties/cp:revision' => 'setRevision',
             ];
             $oProperties = $this->oPhpPresentation->getDocumentProperties();
             foreach ($arrayProperties as $path => $property) {
