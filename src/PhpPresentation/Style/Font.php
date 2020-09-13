@@ -137,7 +137,17 @@ class Font implements ComparableInterface
 
     public function __construct()
     {
-        $this->color = new Color(Color::COLOR_BLACK);
+        // Initialise values
+        $this->name             = 'Calibri';
+        $this->size             = 10;
+        $this->characterSpacing = 0;
+        $this->bold             = false;
+        $this->italic           = false;
+        $this->superScript      = false;
+        $this->subScript        = false;
+        $this->underline        = self::UNDERLINE_NONE;
+        $this->strikethrough    = 'noStrike';
+        $this->color            = new Color(Color::COLOR_BLACK);
     }
 
     /**
@@ -334,6 +344,9 @@ class Font implements ComparableInterface
      */
     public function setStrikethrough(bool $pValue = false): self
     {
+        if ($pValue == '') {
+            $pValue = 'noStrike';
+        }
         $this->strikethrough = $pValue;
 
         return $this;
