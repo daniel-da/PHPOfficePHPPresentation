@@ -55,6 +55,10 @@ class Font implements ComparableInterface
     public const STRIKE_NONE = 'noStrike';
     public const STRIKE_SINGLE = 'sngStrike';
     public const STRIKE_DOUBLE = 'dblStrike';
+    
+    /* Script sub and super values */
+    public const SCRIPT_SUPER = 30000;
+    public const SCRIPT_SUB = -25000;
 
     /**
      * Name.
@@ -148,8 +152,8 @@ class Font implements ComparableInterface
         $this->characterSpacing = 0;
         $this->bold             = false;
         $this->italic           = false;
-        $this->superScript      = false;
-        $this->subScript        = false;
+        $this->superScript      = 0;
+        $this->subScript        = 0;
         $this->underline        = self::UNDERLINE_NONE;
         $this->strikethrough    = self::STRIKE_NONE;
         $this->color            = new Color(Color::COLOR_BLACK);
@@ -266,7 +270,7 @@ class Font implements ComparableInterface
     }
 
     /**
-     * Get SuperScript.
+     * Is SuperScript.
      *
      * @return bool
      */
@@ -290,11 +294,22 @@ class Font implements ComparableInterface
         return $this;
     }
 
+    /**
+     * Is SubScript
+     *
+     * @return bool
+     */
     public function isSubScript(): bool
     {
         return $this->subScript;
     }
 
+    /**
+     * Set SubScript
+     *
+     * @param  bool $pValue
+     */
+    
     public function setSubScript(bool $pValue = false): self
     {
         $this->subScript = $pValue;
