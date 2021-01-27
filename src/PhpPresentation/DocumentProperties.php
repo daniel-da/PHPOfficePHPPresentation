@@ -116,6 +116,13 @@ class DocumentProperties
      */
     private $customProperties = [];
 
+    /*
+     * status
+     *
+     * @var string
+     */
+    private $status;
+
     /**
      * Create a new \PhpOffice\PhpPresentation\DocumentProperties
      */
@@ -124,15 +131,16 @@ class DocumentProperties
         // Initialise values
         $this->creator = 'Unknown Creator';
         $this->lastModifiedBy = $this->creator;
-        $this->created = time();
-        $this->modified = time();
-        $this->title = 'Untitled Presentation';
-        $this->subject = '';
-        $this->description = '';
-        $this->keywords = '';
-        $this->category = '';
-        $this->company = 'Microsoft Corporation';
-       $this->revision       = '';
+        $this->created        = time();
+        $this->modified       = time();
+        $this->title          = "Untitled Presentation";
+        $this->subject        = '';
+        $this->description    = '';
+        $this->keywords       = '';
+        $this->category       = '';
+        $this->company        = 'Microsoft Corporation';
+        $this->revision       = '';
+        $this->status         = '';
     }
 
     /**
@@ -499,4 +507,26 @@ class DocumentProperties
         return $this;
     }
 
+    /**
+     * Get Status
+     *
+     * @return string
+     */
+    public function getStatus()
+    {
+        return $this->status;
+    }
+
+    /**
+     * Set Status
+     *
+     * @param  string                           $pValue
+     * @return \PhpOffice\PhpPresentation\DocumentProperties
+     */
+    public function setStatus($pValue = '')
+    {
+        $this->status = $pValue;
+
+        return $this;
+    }
 }
