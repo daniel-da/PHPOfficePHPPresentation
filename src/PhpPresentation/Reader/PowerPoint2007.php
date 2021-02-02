@@ -878,6 +878,11 @@ class PowerPoint2007 implements ReaderInterface
         $oElement = $document->getElement('p:spPr/a:effectLst', $node);
         if ($oElement instanceof DOMElement) {
             $oShape->getShadow()->setVisible(true);
+          
+            $aEffect = $this->loadEffect($document, $oElement);
+            if (isset($aEffect) && is_array($aEffect)) {
+                $oShape->setEffectCollection($aEffect);
+            }
 
             $oSubElement = $document->getElement('a:outerShdw', $oElement);
             if ($oSubElement instanceof DOMElement) {
@@ -911,8 +916,72 @@ class PowerPoint2007 implements ReaderInterface
                 }
             }
         }
-
         $oSlide->addShape($oShape);
+    }
+    
+    /**
+     * Load Effect for shape or paragraph
+     * 
+     * @param XMLReader $document
+     * @param \DOMElement $node
+     * @return array \PhpOffice\PhpPresentation\Style\Effect[]
+     */
+    protected function loadEffect(XMLReader $document, \DOMElement $nodeEffect)
+    {
+        $aEffect = null;
+        if ($nodeEffect instanceof \DOMElement) {
+
+          $aNodes = $document->getElements('*', $nodeEffect);
+          foreach ($aNodes as $node) {
+            
+            $type = explode(':', $node->tagName);
+            $type = array_pop($type);
+            if (   $type == 'outerShdw'
+                || $type == 'innerShdw') {
+// @TODO                || $type == 'reflection') {
+              
+              // Create a new effect
+              $effect = new \PhpOffice\PhpPresentation\Style\Effect($type);
+              // load blur radius
+              if ($node->hasAttribute('blurRad')) {
+                  $effect->setBlurRadius(CommonDrawing::emuToPixels($node->getAttribute('blurRad')));
+              }
+              // load distance
+              if ($node->hasAttribute('dist')) {
+                  $effect->setDistance(CommonDrawing::emuToPixels($node->getAttribute('dist')));
+              }
+              // load direction
+              if ($node->hasAttribute('dir')) {
+                  $effect->setDirection(CommonDrawing::angleToDegrees($node->getAttribute('dir')));
+              }
+              // load alignment
+              if ($node->hasAttribute('algn')) {
+                  $effect->setAlignment($node->getAttribute('algn'));
+              }
+              
+              // Get color define by prstClr
+              $oSubElement = $document->getElement('a:prstClr', $node);
+              if ($oSubElement instanceof \DOMElement && $oSubElement->hasAttribute('val')) {
+                  $oColor = new Color();
+                  $oColor->setRGB($oSubElement->getAttribute('val'));
+                  $effect->setColor($oColor);
+                  // Get Alpha
+                  $oSubElt = $document->getElement('a:alpha', $oSubElement);
+                  if ($oSubElt instanceof \DOMElement && $oSubElt->hasAttribute('val')) {
+                      $effect->setAlpha((int)$oSubElt->getAttribute('val') / 1000);
+                  }
+              }
+              // Load reflection atributs
+// @TODO future implementation
+              if ($node->tagName == 'a:reflection') {
+              }
+
+              if (!isset($aEffect)) $aEffect = array();
+              $aEffect[] = $effect;
+            }
+          }
+        }
+        return $aEffect;
     }
 
     protected function loadShapeRichText(XMLReader $document, DOMElement $node, AbstractSlide $oSlide): void
@@ -962,6 +1031,16 @@ class PowerPoint2007 implements ReaderInterface
             }
         }
 
+        // Load shape effects
+        $oEffect = $document->getElement('p:spPr/a:effectLst', $node);
+        if ($oEffect instanceof \DOMElement) {
+          $aEffect = $this->loadEffect($document, $oEffect);
+          if (isset($aEffect) && is_array($aEffect)) {
+            $oShape->setEffectCollection($aEffect);
+          }
+        }
+
+// FBU-20210202+ Read body definitions
         $bodyPr = $document->getElement('p:txBody/a:bodyPr', $node);
         if (($bodyPr instanceof \DOMElement) && $bodyPr->hasAttribute('lIns')) {
             $oShape->setInsetLeft((int)$bodyPr->getAttribute('lIns'));
@@ -1307,6 +1386,15 @@ class PowerPoint2007 implements ReaderInterface
                     }
                     if (is_object($oElementFontFormat) && $oElementFontFormat->hasAttribute('typeface')) {
                         $oText->getFont()->setName($oElementFontFormat->getAttribute('typeface'));
+                    }
+
+                    // Load shape effects
+                    $oEffect = $document->getElement('a:effectLst', $oElementrPr);
+                    if ($oEffect instanceof \DOMElement) {
+                      $aEffect = $this->loadEffect($document, $oEffect);
+                      if (isset($aEffect) && is_array($aEffect)) {
+                        $oText->setEffectCollection($aEffect);
+                      }
                     }
 
                     //} else {

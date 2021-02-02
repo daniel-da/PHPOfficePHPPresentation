@@ -19,6 +19,7 @@
 declare(strict_types=1);
 
 namespace PhpOffice\PhpPresentation\Shape\RichText;
+namespace PhpOffice\PhpPresentation\Shape\Effect;
 
 use PhpOffice\PhpPresentation\Style\Font;
 
@@ -35,6 +36,12 @@ class Run extends TextElement implements TextElementInterface
     private $font;
 
     /**
+     * List of effect apply to paragraph
+     * @var array \PhpOffice\PhpPresentation\Style\Effect[]
+     */
+    protected ?array $effectCollection = null;
+
+    /**
      * Create a new \PhpOffice\PhpPresentation\Shape\RichText\Run instance.
      *
      * @param string $pText Text
@@ -44,6 +51,7 @@ class Run extends TextElement implements TextElementInterface
         // Initialise variables
         $this->setText($pText);
         $this->font = new Font();
+        $this->effectCollection = null;
     }
 
     /**
@@ -66,6 +74,46 @@ class Run extends TextElement implements TextElementInterface
         $this->font = $pFont;
 
         return $this;
+    }
+
+    /**
+     * Add an effect to the shpae
+     * 
+     * @param \PhpOffice\PhpPresentation\Style\Effect $effect
+     * @return $this
+     */
+    public function addEffect(Effect $effect)
+    {
+      if (!isset($this->effectCollection)) {
+        $this->effectCollection = array();
+      }
+      $this->effectCollection[] = $effect;
+      return $this;
+    }
+    
+    /**
+     * Get the effect collection
+     * 
+     * @return array \PhpOffice\PhpPresentation\Style\Effect[]
+     */
+    public function getEffectCollection():?array
+    {
+      return $this->effectCollection;
+    }
+    
+    /**
+     * Set the effect collection
+     * 
+     * @param array \PhpOffice\PhpPresentation\Style\Effect $effectCollection
+     * @return $this
+     */
+    public function setEffectCollection(array $effectCollection)
+    {
+      if (   isset($effectCollection)
+          && is_array($effectCollection)) {
+        $this->effectCollection = $effectCollection;
+      }
+      return $this;
     }
 
     /**
