@@ -265,6 +265,9 @@ abstract class AbstractSlide extends AbstractDecoratorWriter
             $objWriter->writeAttribute('lIns', CommonDrawing::pixelsToEmu($shape->getInsetLeft()));
             $objWriter->writeAttribute('rIns', CommonDrawing::pixelsToEmu($shape->getInsetRight()));
             $objWriter->writeAttribute('tIns', CommonDrawing::pixelsToEmu($shape->getInsetTop()));
+            // Vertical alignment
+            $objWriter->writeAttribute('anchor', $shape->getVerticalAlignment());
+            $objWriter->writeAttribute('anchorCtr', (int)$shape->getVerticalAlignCenter());
             if (1 != $shape->getColumns()) {
                 $objWriter->writeAttribute('numCol', $shape->getColumns());
                 $objWriter->writeAttribute('spcCol', CommonDrawing::pixelsToEmu($shape->getColumnSpacing()));
