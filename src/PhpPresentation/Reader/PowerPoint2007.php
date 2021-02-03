@@ -1367,12 +1367,20 @@ class PowerPoint2007 implements ReaderInterface
                             $oText->getHyperlink()->setUrl($this->arrayRels[$this->fileRels][$oElementHlinkClick->getAttribute('r:id')]['Target']);
                         }
                     }
-                    // Font
-                    $oElementFontFormat = null;
-                    $oElementFontFormatLatin = $document->getElement('a:latin', $oElementrPr);
-                    if (is_object($oElementFontFormatLatin)) {
-                        $oText->getFont()->setFormat(Font::FORMAT_LATIN);
-                        $oElementFontFormat = $oElementFontFormatLatin;
+
+                    // Font definition
+                    $oElementFont = $document->getElement('a:latin', $oElementrPr);
+                    if (is_object($oElementFont) && $oElementFont->hasAttribute('typeface')) {
+                        $oText->getFont()->setName($oElementFont->getAttribute('typeface'));
+                    }
+                    if (($oElementFont instanceof \DOMElement) && $oElementFont->hasAttribute('panose')) {
+                        $oText->getFont()->setPanose($oElementFont->getAttribute('panose'));
+                    }
+                    if (($oElementFont instanceof \DOMElement) && $oElementFont->hasAttribute('pitchFamily')) {
+                        $oText->getFont()->setPitchFamily($oElementFont->getAttribute('pitchFamily'));
+                    }
+                    if (($oElementFont instanceof \DOMElement) && $oElementFont->hasAttribute('charset')) {
+                        $oText->getFont()->setCharset($oElementFont->getAttribute('charset'));
                     }
                     $oElementFontFormatEastAsian = $document->getElement('a:ea', $oElementrPr);
                     if (is_object($oElementFontFormatEastAsian)) {

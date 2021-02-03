@@ -72,20 +72,39 @@ class Font implements ComparableInterface
      * @var string
      */
     private $name = 'Calibri';
-
+    
     /**
-     * Font Size.
+     * panose
      *
-     * @var int
+     * @var string
      */
-    private $size = 10;
-
+    private $panose;
     /**
-     * Bold.
+     * pitchFamily
      *
-     * @var bool
+     * @var string
      */
-    private $bold = false;
+    private $pitchFamily;
+    /**
+     * charset
+     *
+     * @var string
+     */
+    private $charset;
+    
+    /**
+     * Font Size
+     *
+     * @var float|int
+     */
+    private $size;
+    
+    /**
+     * Bold
+     *
+     * @var boolean
+     */
+    private $bold;
 
     /**
      * Italic.
@@ -199,6 +218,81 @@ class Font implements ComparableInterface
             $pValue = 'Calibri';
         }
         $this->name = $pValue;
+        return $this;
+    }
+    
+    /**
+     * Get panose
+     *
+     * @return string
+     */
+    public function getPanose()
+    {
+        return $this->panose;
+    }
+
+    /**
+     * Set panose
+     *
+     * @param  string                   $pValue
+     * @return \PhpOffice\PhpPresentation\Style\Font
+     */
+    public function setPanose($pValue)
+    {
+        if ($pValue == '') {
+            $pValue = '';
+        }
+        $this->panose = $pValue;
+
+        return $this;
+    }
+    /**
+     * Get pitchFamily
+     *
+     * @return string
+     */
+    public function getPitchFamily()
+    {
+        return $this->pitchFamily;
+    }
+
+    /**
+     * Set pitchFamily
+     *
+     * @param  string                   $pValue
+     * @return \PhpOffice\PhpPresentation\Style\Font
+     */
+    public function setPitchFamily($pValue)
+    {
+        if ($pValue == '') {
+            $pValue = '';
+        }
+        $this->pitchFamily = $pValue;
+
+        return $this;
+    }
+    /**
+     * Get charset
+     *
+     * @return string
+     */
+    public function getCharset()
+    {
+        return $this->charset;
+    }
+
+    /**
+     * Set charset
+     *
+     * @param  string                   $pValue
+     * @return \PhpOffice\PhpPresentation\Style\Font
+     */
+    public function setCharset($pValue)
+    {
+        if ($pValue == '') {
+            $pValue = '';
+        }
+        $this->charset = $pValue;
 
         return $this;
     }
