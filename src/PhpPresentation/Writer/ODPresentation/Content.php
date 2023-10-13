@@ -1358,9 +1358,9 @@ class Content extends AbstractDecoratorWriter
     /**
      * @todo Improve for supporting any direction (https://sinepost.wordpress.com/2012/02/16/theyve-got-atan-you-want-atan2/)
      */
-    protected function writeStylePartShadow(XMLWriter $objWriter, Shadow $oShadow): void
+    protected function writeStylePartShadow(XMLWriter $objWriter, ?Shadow $oShadow): void
     {
-        if (!$oShadow->isVisible()) {
+        if ($oShadow == null || !$oShadow->isVisible()) {
             return;
         }
         $objWriter->writeAttribute('draw:shadow', 'visible');
