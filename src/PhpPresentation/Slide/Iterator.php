@@ -56,10 +56,10 @@ class Iterator extends IteratorIterator
         unset($this->subject);
     }
 
-    /**
+     /**
      * Rewind iterator.
      */
-    public function rewind()
+    public function rewind() : void
     {
         $this->position = 0;
     }
@@ -87,7 +87,7 @@ class Iterator extends IteratorIterator
     /**
      * Next value.
      */
-    public function next()
+    public function next() : void
     {
         ++$this->position;
     }
@@ -97,7 +97,7 @@ class Iterator extends IteratorIterator
      *
      * @return bool
      */
-    public function valid()
+    public function valid() : bool
     {
         return $this->position < $this->subject->getSlideCount();
     }

@@ -19,9 +19,9 @@
 declare(strict_types=1);
 
 namespace PhpOffice\PhpPresentation\Shape\RichText;
-namespace PhpOffice\PhpPresentation\Shape\Effect;
 
 use PhpOffice\PhpPresentation\Style\Font;
+use PhpOffice\PhpPresentation\Style\Effect;
 
 /**
  * Rich text run.

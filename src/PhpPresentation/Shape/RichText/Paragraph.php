@@ -24,7 +24,7 @@ use PhpOffice\PhpPresentation\ComparableInterface;
 use PhpOffice\PhpPresentation\Style\Alignment;
 use PhpOffice\PhpPresentation\Style\Bullet;
 use PhpOffice\PhpPresentation\Style\Font;
-use PhpOffice\PhpPresentation\Shape\Effect;
+use PhpOffice\PhpPresentation\Style\Effect;
 
 /**
  * \PhpOffice\PhpPresentation\Shape\RichText\Paragraph.
@@ -100,6 +100,7 @@ class Paragraph implements ComparableInterface
      */
     public function __construct()
     {
+        echo 'c';
         $this->alignment = new Alignment();
         $this->font = new Font();
         $this->bulletStyle = new Bullet();
@@ -159,7 +160,8 @@ class Paragraph implements ComparableInterface
     public function setFont(Font $pFont = null): self
     {
         $this->font = $pFont;
-
+        echo "f:";
+        print_r($pFont);
         return $this;
     }
 
@@ -385,7 +387,6 @@ class Paragraph implements ComparableInterface
     public function setLineSpacing($lineSpacing): self
     {
         $this->lineSpacing = $lineSpacing;
-
         return $this;
     }
 
@@ -410,7 +411,6 @@ class Paragraph implements ComparableInterface
         ])) {
             $this->lineSpacingMode = $lineSpacingMode;
         }
-
         return $this;
     }
 

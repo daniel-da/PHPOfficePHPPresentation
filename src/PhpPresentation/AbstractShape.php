@@ -24,6 +24,7 @@ use PhpOffice\PhpPresentation\Exception\ShapeContainerAlreadyAssignedException;
 use PhpOffice\PhpPresentation\Shape\Hyperlink;
 use PhpOffice\PhpPresentation\Shape\Placeholder;
 use PhpOffice\PhpPresentation\Style\Border;
+use PhpOffice\PhpPresentation\Style\Effect;
 use PhpOffice\PhpPresentation\Style\Fill;
 use PhpOffice\PhpPresentation\Style\Shadow;
 
@@ -439,7 +440,7 @@ abstract class AbstractShape implements ComparableInterface
      * @param \PhpOffice\PhpPresentation\Style\Effect $effect
      * @return $this
      */
-    public function addEffect(Shape\Effect $effect)
+    public function addEffect(Effect $effect)
     {
       if (!isset($this->effectCollection)) {
         $this->effectCollection = array();

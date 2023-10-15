@@ -952,7 +952,7 @@ class PowerPoint2007 implements ReaderInterface
               }
               // load direction
               if ($node->hasAttribute('dir')) {
-                  $effect->setDirection(CommonDrawing::angleToDegrees($node->getAttribute('dir')));
+                  $effect->setDirection((int)CommonDrawing::angleToDegrees($node->getAttribute('dir')));
               }
               // load alignment
               if ($node->hasAttribute('algn')) {
@@ -1342,9 +1342,9 @@ class PowerPoint2007 implements ReaderInterface
                     }
                     if ($oElementrPr->hasAttribute('baseline')) {
                         if ((int)$oElementrPr->getAttribute('baseline')>0) {
-                            $oText->getFont()->setSuperScript((int)$oElementrPr->getAttribute('baseline'));
+                            $oText->getFont()->setSuperScript(1===$oElementrPr->getAttribute('baseline'));
                         } else if ((int)$oElementrPr->getAttribute('baseline')<0) {
-                            $oText->getFont()->setSubScript((int)$oElementrPr->getAttribute('baseline'));
+                            $oText->getFont()->setSubScript(1===$oElementrPr->getAttribute('baseline'));
                         }
                     }
                     if ($oElementrPr->hasAttribute('cap')) {

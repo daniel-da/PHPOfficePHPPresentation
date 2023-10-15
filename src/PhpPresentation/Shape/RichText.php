@@ -274,10 +274,20 @@ class RichText extends AbstractShape implements ComparableInterface
             $alignment = clone $this->getActiveParagraph()->getAlignment();
             $font = clone $this->getActiveParagraph()->getFont();
             $bulletStyle = clone $this->getActiveParagraph()->getBulletStyle();
+            echo "
+            
+            
+            ";
+            print_r($this->getActiveParagraph());
         }
+
 
         $this->richTextParagraphs[] = new Paragraph();
         $this->activeParagraph = count($this->richTextParagraphs) - 1;
+
+
+        print_r($this->getActiveParagraph());
+
 
         if (isset($alignment)) {
             $this->getActiveParagraph()->setAlignment($alignment);

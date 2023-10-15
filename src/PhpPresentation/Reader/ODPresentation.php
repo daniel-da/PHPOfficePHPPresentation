@@ -622,10 +622,10 @@ class ODPresentation implements ReaderInterface
                 if (!empty($this->arrayStyles[$keyStyle]['spacingBefore'])) {
                     $oParagraph->setSpacingBefore($this->arrayStyles[$keyStyle]['spacingBefore']);
                 }
-                if (!empty($this->arrayStyles[$keyStyle]['lineSpacingMode'])) {
-                    $oParagraph->setLineSpacingMode($this->arrayStyles[$keyStyle]['lineSpacingMode']);
-                }
                 if (!empty($this->arrayStyles[$keyStyle]['lineSpacing'])) {
+                    if (!empty($this->arrayStyles[$keyStyle]['lineSpacingMode'])) {
+                        $oParagraph->setLineSpacingMode($this->arrayStyles[$keyStyle]['lineSpacingMode']);
+                    }
                     $oParagraph->setLineSpacing($this->arrayStyles[$keyStyle]['lineSpacing']);
                 }
             }
@@ -650,6 +650,9 @@ class ODPresentation implements ReaderInterface
      */
     protected function readParagraphItem(Paragraph $oParagraph, DOMElement $oNodeParent): void
     {
+        print_r($oNodeParent);
+        echo $oNodeParent->getAttribute('text:style-name');
+        print_r($this->arrayStyles[$oNodeParent->getAttribute('text:style-name')]);
         if ($this->oXMLReader->elementExists('text:line-break', $oNodeParent)) {
             $oParagraph->createBreak();
         } else {

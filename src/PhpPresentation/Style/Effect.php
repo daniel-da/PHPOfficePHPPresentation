@@ -210,7 +210,7 @@ class Effect implements ComparableInterface
     public function setAlignment(?string $align)
     {
       if (!isset($align)) $align = self::SHADOW_BOTTOM_RIGHT;
-      $this->align = $align;
+      $this->alignment = $align;
       return $this;
     }
     
@@ -221,7 +221,7 @@ class Effect implements ComparableInterface
      */
     public function getAlignment():string
     {
-      return $this->align;
+      return $this->alignment;
     }
 
     /**
@@ -276,7 +276,7 @@ class Effect implements ComparableInterface
      *
      * @return string Hash code
      */
-    public function getHashCode()
+    public function getHashCode() : string
     {
         return md5($this->effectType . $this->blurRadius . $this->distance . $this->direction . $this->alignment . $this->color->getHashCode() . $this->alpha . __CLASS__);
     }
@@ -289,7 +289,7 @@ class Effect implements ComparableInterface
      *
      * @return string Hash index
      */
-    public function getHashIndex()
+    public function getHashIndex() : int
     {
         return $this->hashIndex;
     }
