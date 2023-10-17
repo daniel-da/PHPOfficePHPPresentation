@@ -22,6 +22,7 @@ namespace PhpOffice\PhpPresentation\Slide;
 
 use ArrayObject;
 use PhpOffice\PhpPresentation\AbstractShape;
+use PhpOffice\PhpPresentation\Measure;
 use PhpOffice\PhpPresentation\ComparableInterface;
 use PhpOffice\PhpPresentation\GeometryCalculator;
 use PhpOffice\PhpPresentation\PhpPresentation;
@@ -53,25 +54,25 @@ abstract class AbstractSlide implements ComparableInterface, ShapeContainerInter
     /**
      * Extent Y.
      *
-     * @var int
+     * @var Measure
      */
     protected $extentY;
     /**
      * Extent X.
      *
-     * @var int
+     * @var Measure
      */
     protected $extentX;
     /**
      * Offset X.
      *
-     * @var int
+     * @var Measure
      */
     protected $offsetX;
     /**
      * Offset Y.
      *
-     * @var int
+     * @var Measure
      */
     protected $offsetY;
     /**
@@ -154,7 +155,7 @@ abstract class AbstractSlide implements ComparableInterface, ShapeContainerInter
     /**
      * Get X Offset.
      */
-    public function getOffsetX(): int
+    public function getOffsetX(): Measure
     {
         if (null === $this->offsetX) {
             $offsets = GeometryCalculator::calculateOffsets($this);
@@ -168,7 +169,7 @@ abstract class AbstractSlide implements ComparableInterface, ShapeContainerInter
     /**
      * Get Y Offset.
      */
-    public function getOffsetY(): int
+    public function getOffsetY(): Measure
     {
         if (null === $this->offsetY) {
             $offsets = GeometryCalculator::calculateOffsets($this);
@@ -182,7 +183,7 @@ abstract class AbstractSlide implements ComparableInterface, ShapeContainerInter
     /**
      * Get X Extent.
      */
-    public function getExtentX(): int
+    public function getExtentX(): Measure
     {
         if (null === $this->extentX) {
             $extents = GeometryCalculator::calculateExtents($this);
@@ -196,7 +197,7 @@ abstract class AbstractSlide implements ComparableInterface, ShapeContainerInter
     /**
      * Get Y Extent.
      */
-    public function getExtentY(): int
+    public function getExtentY(): Measure
     {
         if (null === $this->extentY) {
             $extents = GeometryCalculator::calculateExtents($this);
@@ -266,9 +267,9 @@ abstract class AbstractSlide implements ComparableInterface, ShapeContainerInter
      * @param int $toX Ending point x offset
      * @param int $toY Ending point y offset
      */
-    public function createLineShape(int $fromX, int $fromY, int $toX, int $toY): Line
+    public function createLineShape(int $fromX, int $fromY, int $toX, int $toY, string $unit): Line
     {
-        $shape = new Line($fromX, $fromY, $toX, $toY);
+        $shape = new Line($fromX, $fromY, $toX, $toY, $unit);
         $this->addShape($shape);
 
         return $shape;

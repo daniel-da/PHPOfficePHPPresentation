@@ -22,6 +22,7 @@ namespace PhpOffice\PhpPresentation\Slide;
 
 use ArrayObject;
 use PhpOffice\PhpPresentation\AbstractShape;
+use PhpOffice\PhpPresentation\Measure;
 use PhpOffice\PhpPresentation\ComparableInterface;
 use PhpOffice\PhpPresentation\GeometryCalculator;
 use PhpOffice\PhpPresentation\Shape\RichText;
@@ -61,28 +62,28 @@ class Note implements ComparableInterface, ShapeContainerInterface
     /**
      * Offset X.
      *
-     * @var int
+     * @var Measure
      */
     protected $offsetX;
 
     /**
      * Offset Y.
      *
-     * @var int
+     * @var Measure
      */
     protected $offsetY;
 
     /**
      * Extent X.
      *
-     * @var int
+     * @var Measure
      */
     protected $extentX;
 
     /**
      * Extent Y.
      *
-     * @var int
+     * @var Measure
      */
     protected $extentY;
 
@@ -161,7 +162,7 @@ class Note implements ComparableInterface, ShapeContainerInterface
     /**
      * Get X Offset.
      */
-    public function getOffsetX(): int
+    public function getOffsetX(): Measure
     {
         if (null === $this->offsetX) {
             $offsets = GeometryCalculator::calculateOffsets($this);
@@ -175,7 +176,7 @@ class Note implements ComparableInterface, ShapeContainerInterface
     /**
      * Get Y Offset.
      */
-    public function getOffsetY(): int
+    public function getOffsetY(): Measure
     {
         if (null === $this->offsetY) {
             $offsets = GeometryCalculator::calculateOffsets($this);
@@ -189,7 +190,7 @@ class Note implements ComparableInterface, ShapeContainerInterface
     /**
      * Get X Extent.
      */
-    public function getExtentX(): int
+    public function getExtentX(): Measure
     {
         if (null === $this->extentX) {
             $extents = GeometryCalculator::calculateExtents($this);
@@ -203,7 +204,7 @@ class Note implements ComparableInterface, ShapeContainerInterface
     /**
      * Get Y Extent.
      */
-    public function getExtentY(): int
+    public function getExtentY(): Measure
     {
         if (null === $this->extentY) {
             $extents = GeometryCalculator::calculateExtents($this);

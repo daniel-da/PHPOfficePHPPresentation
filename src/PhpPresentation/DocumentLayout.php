@@ -20,7 +20,7 @@ declare(strict_types=1);
 
 namespace PhpOffice\PhpPresentation;
 
-use PhpOffice\Common\Drawing;
+use PhpOffice\PhpPresentation\Measure;
 
 /**
  * \PhpOffice\PhpPresentation\DocumentLayout.
@@ -40,12 +40,6 @@ class DocumentLayout
     public const LAYOUT_LETTER = 'letter';
     public const LAYOUT_OVERHEAD = 'overhead';
 
-    public const UNIT_EMU = 'emu';
-    public const UNIT_CENTIMETER = 'cm';
-    public const UNIT_INCH = 'in';
-    public const UNIT_MILLIMETER = 'mm';
-    public const UNIT_PIXEL = 'px';
-    public const UNIT_POINT = 'pt';
 
     /**
      * Dimension types.
@@ -81,14 +75,14 @@ class DocumentLayout
     /**
      * Layout X dimension.
      *
-     * @var float
+     * @var Measure
      */
     private $dimensionX;
 
     /**
      * Layout Y dimension.
      *
-     * @var float
+     * @var Measure
      */
     private $dimensionY;
 
@@ -152,90 +146,53 @@ class DocumentLayout
     /**
      * Get Document Layout cx.
      */
-    public function getCX(string $unit = self::UNIT_EMU): float
+    public function getCX(): Measure
     {
-        return $this->convertUnit($this->dimensionX, self::UNIT_EMU, $unit);
+        return $this->dimensionX;
+    }
+    
+    /**
+     * Get Document Layout cx.
+     */
+    public function getCXForUnit(string $unit = Measure::UNIT_EMU): float
+    {
+        return $this->dimensionX->getValueForUnit($unit);
     }
 
     /**
      * Get Document Layout cy.
      */
-    public function getCY(string $unit = self::UNIT_EMU): float
+    public function getCY(): Measure
     {
-        return $this->convertUnit($this->dimensionY, self::UNIT_EMU, $unit);
+        return $this->dimensionY;
+    }
+
+    /**
+     * Get Document Layout cy.
+     */
+    public function getCYForUnit(string $unit = Measure::UNIT_EMU): float
+    {
+        return $this->dimensionY->getValueForUnit($unit);
     }
 
     /**
      * Get Document Layout cx.
      */
-    public function setCX(float $value, string $unit = self::UNIT_EMU): self
+    public function setCX(Measure $value): self
     {
         $this->layout = self::LAYOUT_CUSTOM;
-        $this->dimensionX = $this->convertUnit($value, $unit, self::UNIT_EMU);
-
+        $this->dimensionX = $value;
         return $this;
     }
 
     /**
      * Get Document Layout cy.
      */
-    public function setCY(float $value, string $unit = self::UNIT_EMU): self
+    public function setCY(Measure $value): self
     {
         $this->layout = self::LAYOUT_CUSTOM;
-        $this->dimensionY = $this->convertUnit($value, $unit, self::UNIT_EMU);
-
+        $this->dimensionY = $value ;
         return $this;
     }
 
-    /**
-     * Convert EMUs to differents units.
-     */
-    protected function convertUnit(float $value, string $fromUnit, string $toUnit): float
-    {
-        // Convert from $fromUnit to EMU
-        switch ($fromUnit) {
-            case self::UNIT_MILLIMETER:
-                $value *= 36000;
-                break;
-            case self::UNIT_CENTIMETER:
-                $value *= 360000;
-                break;
-            case self::UNIT_INCH:
-                $value *= 914400;
-                break;
-            case self::UNIT_PIXEL:
-                $value = Drawing::pixelsToEmu($value);
-                break;
-            case self::UNIT_POINT:
-                $value *= 12700;
-                break;
-            case self::UNIT_EMU:
-            default:
-                // no changes
-        }
-
-        // Convert from EMU to $toUnit
-        switch ($toUnit) {
-            case self::UNIT_MILLIMETER:
-                $value /= 36000;
-                break;
-            case self::UNIT_CENTIMETER:
-                $value /= 360000;
-                break;
-            case self::UNIT_INCH:
-                $value /= 914400;
-                break;
-            case self::UNIT_PIXEL:
-                $value = Drawing::emuToPixels((int) $value);
-                break;
-            case self::UNIT_POINT:
-                $value /= 12700;
-                break;
-            case self::UNIT_EMU:
-            default:
-            // no changes
-        }
-
-        return $value;
-    }
 }

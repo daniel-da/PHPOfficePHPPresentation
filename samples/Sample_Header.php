@@ -288,8 +288,8 @@ class PhpPptTree
         $this->append('<dl>');
         $this->append('<dt>Number of slides</dt><dd>' . $oPHPPpt->getSlideCount() . '</dd>');
         $this->append('<dt>Document Layout Name</dt><dd>' . (empty($oPHPPpt->getLayout()->getDocumentLayout()) ? 'Custom' : $oPHPPpt->getLayout()->getDocumentLayout()) . '</dd>');
-        $this->append('<dt>Document Layout Height</dt><dd>' . $oPHPPpt->getLayout()->getCY(DocumentLayout::UNIT_MILLIMETER) . ' mm</dd>');
-        $this->append('<dt>Document Layout Width</dt><dd>' . $oPHPPpt->getLayout()->getCX(DocumentLayout::UNIT_MILLIMETER) . ' mm</dd>');
+        $this->append('<dt>Document Layout Height</dt><dd>' . $oPHPPpt->getLayout()->getCYForUnit(DocumentLayout::UNIT_MILLIMETER) . ' mm</dd>');
+        $this->append('<dt>Document Layout Width</dt><dd>' . $oPHPPpt->getLayout()->getCXForUnit(DocumentLayout::UNIT_MILLIMETER) . ' mm</dd>');
         $this->append('<dt>Properties : Category</dt><dd>' . $oPHPPpt->getDocumentProperties()->getCategory() . '</dd>');
         $this->append('<dt>Properties : Company</dt><dd>' . $oPHPPpt->getDocumentProperties()->getCompany() . '</dd>');
         $this->append('<dt>Properties : Created</dt><dd>' . $oPHPPpt->getDocumentProperties()->getCreated() . '</dd>');

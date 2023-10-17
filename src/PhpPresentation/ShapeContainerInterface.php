@@ -44,22 +44,22 @@ interface ShapeContainerInterface
     /**
      * Get X Offset.
      */
-    public function getOffsetX(): int;
+    public function getOffsetX(): Measure;
 
     /**
      * Get Y Offset.
      */
-    public function getOffsetY(): int;
+    public function getOffsetY(): Measure;
 
     /**
      * Get X Extent.
      */
-    public function getExtentX(): int;
+    public function getExtentX(): Measure;
 
     /**
      * Get Y Extent.
      */
-    public function getExtentY(): int;
+    public function getExtentY(): Measure;
 
     public function getHashCode(): string;
 }

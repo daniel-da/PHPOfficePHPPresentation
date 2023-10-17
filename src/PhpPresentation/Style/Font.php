@@ -71,7 +71,7 @@ class Font implements ComparableInterface
      *
      * @var string
      */
-    private $name = 'Calibri';
+    private $name;
     
     /**
      * panose
@@ -176,13 +176,19 @@ class Font implements ComparableInterface
      */
     private $capitalize;
     
+    /*
+     * Capitalize type
+     * 
+     * @var FontFace[]
+     */
+    private $fontFaces = [];
+
     /**
      * Create a new \PhpOffice\PhpPresentation\Style\Font
      */
     public function __construct()
     {
         // Initialise values
-        $this->name             = 'Calibri';
         $this->size             = 10;
         $this->characterSpacing = 0;
         $this->bold             = false;
@@ -200,9 +206,9 @@ class Font implements ComparableInterface
      *
      * @return string
      */
-    public function getName(): string
+    public function getName(): ?string
     {
-        return $this->name;
+        return isset($this->name) ? $this->name : null;
     }
 
     /**
@@ -212,11 +218,8 @@ class Font implements ComparableInterface
      *
      * @return self
      */
-    public function setName(string $pValue = 'Calibri'): self
+    public function setName(string $pValue): self
     {
-        if ('' == $pValue) {
-            $pValue = 'Calibri';
-        }
         $this->name = $pValue;
         return $this;
     }
@@ -539,7 +542,7 @@ class Font implements ComparableInterface
     public function getHashCode(): string
     {
         return md5(
-            $this->name
+            (($this->name) ? $this->name : '')
             . $this->size
             . ($this->bold ? 't' : 'f')
             . ($this->italic ? 't' : 'f')
@@ -549,6 +552,9 @@ class Font implements ComparableInterface
             . ($this->strikethrough ? 't' : 'f')
             . $this->format
             . $this->color->getHashCode()
+            . ((isset($this->fontFaces[''])) ? $this->fontFaces['']->getHashCode() : '')
+            . ((isset($this->fontFaces['asian'])) ? $this->fontFaces['asian']->getHashCode() : '')
+            . ((isset($this->fontFaces['complex'])) ? $this->fontFaces['complex']->getHashCode() : '')
             . __CLASS__
         );
     }
@@ -594,6 +600,7 @@ class Font implements ComparableInterface
         $this->capitalize = $value;
         return $this;
     }
+
     /**
      * Get Capitalize
      *
@@ -603,7 +610,27 @@ class Font implements ComparableInterface
     {
         return $this->capitalize;
     }
-    
-    
+
+     /**
+     * Set fontFace
+     *
+     * @param  FontFace $pValue
+     * @return \PhpOffice\PhpPresentation\Style\Font
+     */
+    public function setFontFace(string $key, FontFace $value)
+    {
+        $this->fontFaces[$key] = $value;
+        return $this;
+    }
+
+    /**
+     * Get FontFace
+     *
+     * @return FontFace[]
+     */
+    public function getFontFaces() 
+    {
+        return $this->fontFaces;
+    }
     
 }

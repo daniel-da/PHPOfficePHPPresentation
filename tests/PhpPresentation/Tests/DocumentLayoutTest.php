@@ -21,6 +21,7 @@ declare(strict_types=1);
 namespace PhpOffice\PhpPresentation\Tests;
 
 use PhpOffice\PhpPresentation\DocumentLayout;
+use PhpOffice\PhpPresentation\Measure;
 use PHPUnit\Framework\TestCase;
 
 /**
@@ -38,8 +39,8 @@ class DocumentLayoutTest extends TestCase
         $object = new DocumentLayout();
 
         $this->assertEquals('screen4x3', $object->getDocumentLayout());
-        $this->assertEquals(9144000, $object->getCX());
-        $this->assertEquals(6858000, $object->getCY());
+        $this->assertEquals(9144000, $object->getCXForUnit(Measure::UNIT_EMU));
+        $this->assertEquals(6858000, $object->getCYForUnit(Measure::UNIT_EMU));
     }
 
     /**
@@ -50,12 +51,12 @@ class DocumentLayoutTest extends TestCase
         $object = new DocumentLayout();
         $object->setDocumentLayout(['cx' => 6858000, 'cy' => 9144000], false);
         $this->assertEquals(DocumentLayout::LAYOUT_CUSTOM, $object->getDocumentLayout());
-        $this->assertEquals(9144000, $object->getCX());
-        $this->assertEquals(6858000, $object->getCY());
+        $this->assertEquals(9144000, $object->getCXForUnit(Measure::UNIT_EMU));
+        $this->assertEquals(6858000, $object->getCYForUnit(Measure::UNIT_EMU));
         $object->setDocumentLayout(['cx' => 6858000, 'cy' => 9144000], true);
         $this->assertEquals(DocumentLayout::LAYOUT_CUSTOM, $object->getDocumentLayout());
-        $this->assertEquals(6858000, $object->getCX());
-        $this->assertEquals(9144000, $object->getCY());
+        $this->assertEquals(6858000, $object->getCXForUnit(Measure::UNIT_EMU));
+        $this->assertEquals(9144000, $object->getCYForUnit(Measure::UNIT_EMU));
     }
 
     public function testCX(): void

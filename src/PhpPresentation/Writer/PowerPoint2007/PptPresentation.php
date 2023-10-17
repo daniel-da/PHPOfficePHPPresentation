@@ -23,6 +23,7 @@ namespace PhpOffice\PhpPresentation\Writer\PowerPoint2007;
 use PhpOffice\Common\Adapter\Zip\ZipInterface;
 use PhpOffice\Common\XMLWriter;
 use PhpOffice\PhpPresentation\DocumentLayout;
+use PhpOffice\PhpPresentation\Measure;
 
 class PptPresentation extends AbstractDecoratorWriter
 {
@@ -81,8 +82,8 @@ class PptPresentation extends AbstractDecoratorWriter
 
         // p:sldSz
         $objWriter->startElement('p:sldSz');
-        $objWriter->writeAttribute('cx', $this->oPresentation->getLayout()->getCX());
-        $objWriter->writeAttribute('cy', $this->oPresentation->getLayout()->getCY());
+        $objWriter->writeAttribute('cx', $this->oPresentation->getLayout()->getCXForUnit(Measure::UNIT_EMU));
+        $objWriter->writeAttribute('cy', $this->oPresentation->getLayout()->getCYForUnit(Measure::UNIT_EMU));
         if (DocumentLayout::LAYOUT_CUSTOM != $this->oPresentation->getLayout()->getDocumentLayout()) {
             $objWriter->writeAttribute('type', $this->oPresentation->getLayout()->getDocumentLayout());
         }

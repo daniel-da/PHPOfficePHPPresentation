@@ -22,6 +22,7 @@ namespace PhpOffice\PhpPresentation\Shape;
 
 use PhpOffice\PhpPresentation\AbstractShape;
 use PhpOffice\PhpPresentation\ComparableInterface;
+use PhpOffice\PhpPresentation\Measure;
 
 /**
  * Abstract drawing.
@@ -159,16 +160,16 @@ abstract class AbstractGraphic extends AbstractShape implements ComparableInterf
      *
      * @return self
      */
-    public function setWidth(int $pValue = 0)
+    public function setWidth(Measure $pMeasure)
     {
         // Resize proportional?
-        if ($this->resizeProportional && 0 != $pValue && 0 != $this->width) {
-            $ratio = $this->height / $this->width;
-            $this->height = (int) round($ratio * $pValue);
+        if ($this->resizeProportional && 0 != $pMeasure->getValue() && 0 != $this->width->getValue()) {
+            $ratio = $this->height->getValue() / $this->width->getValue();
+            $this->height->setValue($ratio * $pMeasure->getValue());
         }
 
         // Set width
-        $this->width = $pValue;
+        $this->width = $pMeasure;
 
         return $this;
     }
@@ -178,17 +179,15 @@ abstract class AbstractGraphic extends AbstractShape implements ComparableInterf
      *
      * @return self
      */
-    public function setHeight(int $pValue = 0)
+    public function setHeight(Measure $pMeasure)
     {
         // Resize proportional?
-        if ($this->resizeProportional && 0 != $pValue && 0 != $this->height) {
-            $ratio = $this->width / $this->height;
-            $this->width = (int) round($ratio * $pValue);
+        if ($this->resizeProportional && 0 != $pMeasure->getValue() && 0 != $this->height->getValue()) {
+            $ratio = $this->width->getValue() / $this->height->getValue();
+            $this->width->setValue($ratio * $pMeasure->getValue());
         }
-
         // Set height
-        $this->height = $pValue;
-
+        $this->height = $pMeasure;
         return $this;
     }
 
@@ -199,20 +198,19 @@ abstract class AbstractGraphic extends AbstractShape implements ComparableInterf
      *
      * @return self
      */
-    public function setWidthAndHeight(int $width = 0, int $height = 0)
+    public function setWidthAndHeight(Measure $width, Measure $height)
     {
-        $xratio = $width / $this->width;
-        $yratio = $height / $this->height;
-        if ($this->resizeProportional && !(0 == $width || 0 == $height)) {
-            if (($xratio * $this->height) < $height) {
-                $this->height = (int) ceil($xratio * $this->height);
+        $xratio = $width->getValue() / $this->width->getValue();
+        $yratio = $height->getValue() / $this->height->getValue();
+        if ($this->resizeProportional && !(0 == $width->getValue() || 0 == $height->getValue())) {
+            if (($xratio * $this->height->getValue()) < $height->getValue()) {
+                $this->height->setValue($xratio * $this->height->getValue());
                 $this->width = $width;
             } else {
-                $this->width = (int) ceil($yratio * $this->width);
+                $this->width->setValue($yratio * $this->width->getValue());
                 $this->height = $height;
             }
         }
-
         return $this;
     }
 

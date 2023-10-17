@@ -22,6 +22,7 @@ namespace PhpOffice\PhpPresentation\Shape;
 
 use ArrayObject;
 use PhpOffice\PhpPresentation\AbstractShape;
+use PhpOffice\PhpPresentation\Measure;
 use PhpOffice\PhpPresentation\GeometryCalculator;
 use PhpOffice\PhpPresentation\ShapeContainerInterface;
 
@@ -81,12 +82,12 @@ class Group extends AbstractShape implements ShapeContainerInterface
     /**
      * Get X Offset.
      */
-    public function getOffsetX(): int
+    public function getOffsetX(): Measure
     {
-        if (empty($this->offsetX)) {
+        if (empty($this->offsetX->getValue())) {
             $offsets = GeometryCalculator::calculateOffsets($this);
-            $this->offsetX = $offsets[GeometryCalculator::X];
-            $this->offsetY = $offsets[GeometryCalculator::Y];
+            $this->offsetX->setValue($offsets[GeometryCalculator::X]);
+            $this->offsetY->setValue($offsets[GeometryCalculator::Y]);
         }
 
         return $this->offsetX;
@@ -97,7 +98,7 @@ class Group extends AbstractShape implements ShapeContainerInterface
      *
      * @return $this
      */
-    public function setOffsetX(int $pValue = 0)
+    public function setOffsetX(Measure $pValue)
     {
         return $this;
     }
@@ -105,7 +106,7 @@ class Group extends AbstractShape implements ShapeContainerInterface
     /**
      * Get Y Offset.
      */
-    public function getOffsetY(): int
+    public function getOffsetY(): Measure
     {
         if (empty($this->offsetY)) {
             $offsets = GeometryCalculator::calculateOffsets($this);
@@ -121,7 +122,7 @@ class Group extends AbstractShape implements ShapeContainerInterface
      *
      * @return $this
      */
-    public function setOffsetY(int $pValue = 0)
+    public function setOffsetY(Measure $pValue)
     {
         return $this;
     }
@@ -129,12 +130,12 @@ class Group extends AbstractShape implements ShapeContainerInterface
     /**
      * Get X Extent.
      */
-    public function getExtentX(): int
+    public function getExtentX(): Measure
     {
         if (null === $this->extentX) {
             $extents = GeometryCalculator::calculateExtents($this);
-            $this->extentX = $extents[GeometryCalculator::X] - $this->getOffsetX();
-            $this->extentY = $extents[GeometryCalculator::Y] - $this->getOffsetY();
+            $this->extentX = Measure::subtract($extents[GeometryCalculator::X], $this->getOffsetX());
+            $this->extentY = Measure::subtract($extents[GeometryCalculator::Y], $this->getOffsetY());
         }
 
         return $this->extentX;
@@ -143,12 +144,12 @@ class Group extends AbstractShape implements ShapeContainerInterface
     /**
      * Get Y Extent.
      */
-    public function getExtentY(): int
+    public function getExtentY(): Measure
     {
         if (null === $this->extentY) {
             $extents = GeometryCalculator::calculateExtents($this);
-            $this->extentX = $extents[GeometryCalculator::X] - $this->getOffsetX();
-            $this->extentY = $extents[GeometryCalculator::Y] - $this->getOffsetY();
+            $this->extentX = Measure::subtract($extents[GeometryCalculator::X], $this->getOffsetX());
+            $this->extentY = Measure::subtract($extents[GeometryCalculator::Y], $this->getOffsetY());
         }
 
         return $this->extentY;
@@ -159,7 +160,7 @@ class Group extends AbstractShape implements ShapeContainerInterface
      *
      * @return self
      */
-    public function setWidth(int $pValue = 0)
+    public function setWidth(Measure $pValue)
     {
         return $this;
     }
@@ -169,7 +170,7 @@ class Group extends AbstractShape implements ShapeContainerInterface
      *
      * @return $this
      */
-    public function setHeight(int $pValue = 0)
+    public function setHeight(Measure $pValue)
     {
         return $this;
     }
@@ -190,16 +191,17 @@ class Group extends AbstractShape implements ShapeContainerInterface
     /**
      * Create line shape.
      *
-     * @param int $fromX Starting point x offset
-     * @param int $fromY Starting point y offset
-     * @param int $toX Ending point x offset
-     * @param int $toY Ending point y offset
+     * @param float $fromX Starting point x offset
+     * @param float $fromY Starting point y offset
+     * @param float $toX Ending point x offset
+     * @param float $toY Ending point y offset
+     * @param string $unit unit
      *
      * @return Line
      */
-    public function createLineShape(int $fromX, int $fromY, int $toX, int $toY): Line
+    public function createLineShape(float $fromX, float $fromY, float $toX, float $toY, $unit): Line
     {
-        $shape = new Line($fromX, $fromY, $toX, $toY);
+        $shape = new Line($fromX, $fromY, $toX, $toY, $unit);
         $this->addShape($shape);
 
         return $shape;

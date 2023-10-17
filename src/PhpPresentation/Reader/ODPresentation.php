@@ -25,10 +25,12 @@ use DOMElement;
 use PhpOffice\Common\Drawing as CommonDrawing;
 use PhpOffice\Common\XMLReader;
 use PhpOffice\PhpPresentation\DocumentProperties;
+use PhpOffice\PhpPresentation\DocumentLayout;
 use PhpOffice\PhpPresentation\Exception\FileNotFoundException;
 use PhpOffice\PhpPresentation\Exception\InvalidFileFormatException;
 use PhpOffice\PhpPresentation\PhpPresentation;
 use PhpOffice\PhpPresentation\PresentationProperties;
+use PhpOffice\PhpPresentation\Measure;
 use PhpOffice\PhpPresentation\Shape\Drawing\Base64;
 use PhpOffice\PhpPresentation\Shape\Drawing\Gd;
 use PhpOffice\PhpPresentation\Shape\RichText;
@@ -39,6 +41,7 @@ use PhpOffice\PhpPresentation\Style\Bullet;
 use PhpOffice\PhpPresentation\Style\Color;
 use PhpOffice\PhpPresentation\Style\Fill;
 use PhpOffice\PhpPresentation\Style\Font;
+use PhpOffice\PhpPresentation\Style\FontFace;
 use PhpOffice\PhpPresentation\Style\Shadow;
 use ZipArchive;
 
@@ -59,6 +62,14 @@ class ODPresentation implements ReaderInterface
      * @var \ZipArchive
      */
     protected $oZip;
+    /**
+     * @var FontFace[]
+     */
+    protected $arrayFontFaces = [];
+    /**
+     * @var DocumentLayout[]
+     */
+    protected $arrayPageStyles = [];
     /**
      * @var array[]
      */
@@ -221,6 +232,11 @@ class ODPresentation implements ReaderInterface
      */
     protected function loadSlides(): void
     {
+        foreach ($this->oXMLReader->getElements('/office:document-content/office:font-face-decls/*') as $oElement) {
+            if ($oElement instanceof DOMElement && 'style:font-face' == $oElement->nodeName) {
+                $this->loadFontFace($oElement);
+            }
+        }
         foreach ($this->oXMLReader->getElements('/office:document-content/office:automatic-styles/*') as $oElement) {
             if ($oElement instanceof DOMElement && $oElement->hasAttribute('style:name')) {
                 $this->loadStyle($oElement);
@@ -244,11 +260,40 @@ class ODPresentation implements ReaderInterface
     }
 
     /**
+     * Extract Font Face
+     */
+    protected function loadFontFace(DOMElement $nodeStyle): void
+    {
+        $keyStyle = $nodeStyle->getAttribute('style:name');
+        $nodeFontFace = $nodeStyle; 
+        $ff = new FontFace();
+        $ff->setName($keyStyle);
+        if ($nodeFontFace->hasAttribute('svg:font-family')) {
+            $ff->setFontFamily($nodeFontFace->getAttribute('svg:font-family'));
+        }
+        if ($nodeFontFace->hasAttribute('style:font-family-generic')) {
+            $ff->setFontFamilyGeneric($nodeFontFace->getAttribute('style:font-family-generic'));
+        }
+        if ($nodeFontFace->hasAttribute('style:font-pitch')) {
+            $ff->setFontPitch($nodeFontFace->getAttribute('style:font-pitch'));
+        }
+        $this->arrayFontFaces[$keyStyle] = $ff;
+    
+    }
+    /**
      * Extract style
      */
     protected function loadStyle(DOMElement $nodeStyle): bool
     {
         $keyStyle = $nodeStyle->getAttribute('style:name');
+
+        $nodePageLayoutProps = $this->oXMLReader->getElement('style:page-layout-properties', $nodeStyle);
+        if ($nodePageLayoutProps instanceof DOMElement) {
+            $oLayout = new DocumentLayout(); 
+            $oLayout->setCX(Measure::toMeasure($nodePageLayoutProps->getAttribute('fo:page-width')));
+            $oLayout->setCY(Measure::toMeasure($nodePageLayoutProps->getAttribute('fo:page-height')));
+            $this->arrayPageStyles[$keyStyle] = $oLayout;
+        }
 
         $nodeDrawingPageProps = $this->oXMLReader->getElement('style:drawing-page-properties', $nodeStyle);
         if ($nodeDrawingPageProps instanceof DOMElement) {
@@ -326,53 +371,45 @@ class ODPresentation implements ReaderInterface
             if ($nodeTextProperties->hasAttribute('fo:color')) {
                 $oFont->getColor()->setRGB(substr($nodeTextProperties->getAttribute('fo:color'), -6));
             }
+            
             // Font Latin
             if ($nodeTextProperties->hasAttribute('fo:font-family')) {
-                $oFont
-                    ->setName($nodeTextProperties->getAttribute('fo:font-family'))
-                    ->setFormat(Font::FORMAT_LATIN);
+                $oFont->setName($nodeTextProperties->getAttribute('fo:font-family'));
+            }
+            if ($nodeTextProperties->hasAttribute('style:font-name')) {
+                $oFont->setFontFace('', $this->arrayFontFaces[$nodeTextProperties->getAttribute('style:font-name')]);
             }
             if ($nodeTextProperties->hasAttribute('fo:font-weight') && 'bold' == $nodeTextProperties->getAttribute('fo:font-weight')) {
-                $oFont
-                    ->setBold(true)
-                    ->setFormat(Font::FORMAT_LATIN);
+                $oFont->setBold(true);
             }
             if ($nodeTextProperties->hasAttribute('fo:font-size')) {
-                $oFont
-                    ->setSize((int) substr($nodeTextProperties->getAttribute('fo:font-size'), 0, -2))
-                    ->setFormat(Font::FORMAT_LATIN);
+                $oFont->setSize((int) substr($nodeTextProperties->getAttribute('fo:font-size'), 0, -2));
             }
             // Font East Asian
             if ($nodeTextProperties->hasAttribute('style:font-family-asian')) {
-                $oFont
-                    ->setName($nodeTextProperties->getAttribute('style:font-family-asian'))
-                    ->setFormat(Font::FORMAT_EAST_ASIAN);
+                $oFont->setName($nodeTextProperties->getAttribute('style:font-family-asian'));
+            }
+            if ($nodeTextProperties->hasAttribute('style:font-name-asian')) {
+                $oFont->setFontFace('asian',$this->arrayFontFaces[$nodeTextProperties->getAttribute('style:font-name-asian')]);
             }
             if ($nodeTextProperties->hasAttribute('style:font-weight-asian') && 'bold' == $nodeTextProperties->getAttribute('style:font-weight-asian')) {
-                $oFont
-                    ->setBold(true)
-                    ->setFormat(Font::FORMAT_EAST_ASIAN);
+                $oFont->setBold(true);
             }
             if ($nodeTextProperties->hasAttribute('style:font-size-asian')) {
-                $oFont
-                    ->setSize((int) substr($nodeTextProperties->getAttribute('style:font-size-asian'), 0, -2))
-                    ->setFormat(Font::FORMAT_EAST_ASIAN);
+                $oFont->setSize((int) substr($nodeTextProperties->getAttribute('style:font-size-asian'), 0, -2));
             }
             // Font Complex Script
             if ($nodeTextProperties->hasAttribute('style:font-family-complex')) {
-                $oFont
-                    ->setName($nodeTextProperties->getAttribute('style:font-family-complex'))
-                    ->setFormat(Font::FORMAT_COMPLEX_SCRIPT);
+                $oFont->setName($nodeTextProperties->getAttribute('style:font-family-complex'));
+            }
+            if ($nodeTextProperties->hasAttribute('style:font-name-complex')) {
+                $oFont->setFontFace('complex',$this->arrayFontFaces[$nodeTextProperties->getAttribute('style:font-name-complex')]);
             }
             if ($nodeTextProperties->hasAttribute('style:font-weight-complex') && 'bold' == $nodeTextProperties->getAttribute('style:font-weight-complex')) {
-                $oFont
-                    ->setBold(true)
-                    ->setFormat(Font::FORMAT_COMPLEX_SCRIPT);
+                $oFont->setBold(true);
             }
             if ($nodeTextProperties->hasAttribute('style:font-size-complex')) {
-                $oFont
-                    ->setSize((int) substr($nodeTextProperties->getAttribute('style:font-size-complex'), 0, -2))
-                    ->setFormat(Font::FORMAT_COMPLEX_SCRIPT);
+                $oFont->setSize((int) substr($nodeTextProperties->getAttribute('style:font-size-complex'), 0, -2));
             }
             if ($nodeTextProperties->hasAttribute('style:script-type')) {
                 switch ($nodeTextProperties->getAttribute('style:script-type')) {
@@ -559,11 +596,11 @@ class ODPresentation implements ReaderInterface
         $shape->setName($oNodeFrame->hasAttribute('draw:name') ? $oNodeFrame->getAttribute('draw:name') : '');
         $shape->setDescription($oNodeFrame->hasAttribute('draw:name') ? $oNodeFrame->getAttribute('draw:name') : '');
         $shape->setResizeProportional(false);
-        $shape->setWidth($oNodeFrame->hasAttribute('svg:width') ? CommonDrawing::centimetersToPixels((float) substr($oNodeFrame->getAttribute('svg:width'), 0, -2)) : 0);
-        $shape->setHeight($oNodeFrame->hasAttribute('svg:height') ? CommonDrawing::centimetersToPixels((float) substr($oNodeFrame->getAttribute('svg:height'), 0, -2)) : 0);
+        $shape->setWidth($oNodeFrame->hasAttribute('svg:width') ? Measure::toMeasure($oNodeFrame->getAttribute('svg:width')) : new Measure(0, 'cm'));
+        $shape->setHeight($oNodeFrame->hasAttribute('svg:height') ? Measure::toMeasure($oNodeFrame->getAttribute('svg:height')) : new Measure(0, 'cm'));
         $shape->setResizeProportional(true);
-        $shape->setOffsetX($oNodeFrame->hasAttribute('svg:x') ? CommonDrawing::centimetersToPixels((float) substr($oNodeFrame->getAttribute('svg:x'), 0, -2)) : 0);
-        $shape->setOffsetY($oNodeFrame->hasAttribute('svg:y') ? CommonDrawing::centimetersToPixels((float) substr($oNodeFrame->getAttribute('svg:y'), 0, -2)) : 0);
+        $shape->setOffsetX($oNodeFrame->hasAttribute('svg:x') ? Measure::toMeasure($oNodeFrame->getAttribute('svg:x')) : new Measure(0, 'cm'));
+        $shape->setOffsetY($oNodeFrame->hasAttribute('svg:y') ? Measure::toMeasure($oNodeFrame->getAttribute('svg:y')) : new Measure(0, 'cm'));
 
         if ($oNodeFrame->hasAttribute('draw:style-name')) {
             $keyStyle = $oNodeFrame->getAttribute('draw:style-name');
@@ -584,11 +621,10 @@ class ODPresentation implements ReaderInterface
         // Core
         $oShape = $this->oPhpPresentation->getActiveSlide()->createRichTextShape();
         $oShape->setParagraphs([]);
-
-        $oShape->setWidth($oNodeFrame->hasAttribute('svg:width') ? CommonDrawing::centimetersToPixels((float) substr($oNodeFrame->getAttribute('svg:width'), 0, -2)) : 0);
-        $oShape->setHeight($oNodeFrame->hasAttribute('svg:height') ? CommonDrawing::centimetersToPixels((float) substr($oNodeFrame->getAttribute('svg:height'), 0, -2)) : 0);
-        $oShape->setOffsetX($oNodeFrame->hasAttribute('svg:x') ? CommonDrawing::centimetersToPixels((float) substr($oNodeFrame->getAttribute('svg:x'), 0, -2)) : 0);
-        $oShape->setOffsetY($oNodeFrame->hasAttribute('svg:y') ? CommonDrawing::centimetersToPixels((float) substr($oNodeFrame->getAttribute('svg:y'), 0, -2)) : 0);
+        $oShape->setWidth($oNodeFrame->hasAttribute('svg:width') ? Measure::toMeasure($oNodeFrame->getAttribute('svg:width')) : new Measure(0, 'cm'));
+        $oShape->setHeight($oNodeFrame->hasAttribute('svg:height') ? Measure::toMeasure($oNodeFrame->getAttribute('svg:height')) : new Measure(0, 'cm'));
+        $oShape->setOffsetX($oNodeFrame->hasAttribute('svg:x') ? Measure::toMeasure($oNodeFrame->getAttribute('svg:x')) : new Measure(0, 'cm'));
+        $oShape->setOffsetY($oNodeFrame->hasAttribute('svg:y') ? Measure::toMeasure($oNodeFrame->getAttribute('svg:y')) : new Measure(0, 'cm'));
 
         foreach ($this->oXMLReader->getElements('draw:text-box/*', $oNodeFrame) as $oNodeParagraph) {
             $this->levelParagraph = 0;
@@ -650,9 +686,9 @@ class ODPresentation implements ReaderInterface
      */
     protected function readParagraphItem(Paragraph $oParagraph, DOMElement $oNodeParent): void
     {
-        print_r($oNodeParent);
-        echo $oNodeParent->getAttribute('text:style-name');
-        print_r($this->arrayStyles[$oNodeParent->getAttribute('text:style-name')]);
+        //print_r($oNodeParent);
+        //echo $oNodeParent->getAttribute('text:style-name');
+        //print_r($this->arrayStyles[$oNodeParent->getAttribute('text:style-name')]);
         if ($this->oXMLReader->elementExists('text:line-break', $oNodeParent)) {
             $oParagraph->createBreak();
         } else {
@@ -672,6 +708,8 @@ class ODPresentation implements ReaderInterface
             } else {
                 $oTextRun->setText($oNodeParent->nodeValue);
             }
+            //echo "\n----------\n\n";
+            //print_r($oTextRun);
         }
     }
 
@@ -719,6 +757,31 @@ class ODPresentation implements ReaderInterface
      */
     protected function loadStylesFile(): void
     {
+
+        foreach ($this->oXMLReader->getElements('/office:document-styles/office:font-face-decls/*') as $oElement) {
+            if ($oElement instanceof DOMElement && $oElement->hasAttribute('style:name')) {
+                $this->loadFontFace($oElement);
+            }
+        }
+
+        print_r($this->arrayFontFaces);
+
+        foreach ($this->oXMLReader->getElements('/office:document-styles/office:automatic-styles/*') as $oElement) {
+            if ($oElement instanceof DOMElement && $oElement->hasAttribute('style:name')) {
+                $this->loadStyle($oElement);
+            }
+        }
+
+        foreach ($this->oXMLReader->getElements('/office:document-styles/office:master-styles/*') as $oElement) {
+            if ($oElement instanceof DOMElement && 'style:master-page' == $oElement->nodeName) {
+                $nodeMasterPage = $oElement;  
+                $oLayout = $this->arrayPageStyles[$nodeMasterPage->getAttribute('style:page-layout-name')];
+                if (isset($oLayout)) {
+                    $this->oPhpPresentation->setLayout($oLayout);
+                }
+            }
+        }
+        
         foreach ($this->oXMLReader->getElements('/office:document-styles/office:styles/*') as $oElement) {
             if ($oElement instanceof DOMElement && 'draw:fill-image' == $oElement->nodeName) {
                 $this->arrayCommonStyles[$oElement->getAttribute('draw:name')] = [

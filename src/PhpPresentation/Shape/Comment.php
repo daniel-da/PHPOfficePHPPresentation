@@ -21,6 +21,7 @@ declare(strict_types=1);
 namespace PhpOffice\PhpPresentation\Shape;
 
 use PhpOffice\PhpPresentation\AbstractShape;
+use PhpOffice\PhpPresentation\Measure;
 use PhpOffice\PhpPresentation\ComparableInterface;
 use PhpOffice\PhpPresentation\Shape\Comment\Author;
 
@@ -105,7 +106,7 @@ class Comment extends AbstractShape implements ComparableInterface
     /**
      * Comment has not height.
      *
-     * @return int|null
+     * @return Measure|null
      */
     public function getHeight()
     {
@@ -117,7 +118,7 @@ class Comment extends AbstractShape implements ComparableInterface
      *
      * @return $this
      */
-    public function setHeight(int $pValue = 0)
+    public function setHeight(Measure $pValue = 0)
     {
         return $this;
     }
@@ -125,7 +126,7 @@ class Comment extends AbstractShape implements ComparableInterface
     /**
      * Comment has not width.
      *
-     * @return int|null
+     * @return Measure|null
      */
     public function getWidth()
     {
@@ -137,7 +138,7 @@ class Comment extends AbstractShape implements ComparableInterface
      *
      * @return self
      */
-    public function setWidth(int $pValue = 0)
+    public function setWidth(Measure $pValue)
     {
         return $this;
     }

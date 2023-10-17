@@ -27,6 +27,7 @@ use PhpOffice\PhpPresentation\Style\Border;
 use PhpOffice\PhpPresentation\Style\Effect;
 use PhpOffice\PhpPresentation\Style\Fill;
 use PhpOffice\PhpPresentation\Style\Shadow;
+use PhpOffice\PhpPresentation\Measure;
 
 /**
  * Abstract shape.
@@ -43,28 +44,28 @@ abstract class AbstractShape implements ComparableInterface
     /**
      * Offset X.
      *
-     * @var int
+     * @var Measure
      */
     protected $offsetX;
 
     /**
      * Offset Y.
      *
-     * @var int
+     * @var Measure
      */
     protected $offsetY;
 
     /**
      * Width.
      *
-     * @var int
+     * @var Measure
      */
     protected $width;
 
     /**
      * Height.
      *
-     * @var int
+     * @var Measure
      */
     protected $height;
 
@@ -131,10 +132,10 @@ abstract class AbstractShape implements ComparableInterface
     {
         // Initialise values
         $this->container = null;
-        $this->offsetX = 0;
-        $this->offsetY = 0;
-        $this->width = 0;
-        $this->height = 0;
+        $this->offsetX = new Measure();
+        $this->offsetY = new Measure();
+        $this->width = new Measure();
+        $this->height = new Measure();
         $this->rotation = 0;
         $this->name = '';
         $this->fill = new Fill();
@@ -248,9 +249,9 @@ abstract class AbstractShape implements ComparableInterface
     /**
      * Get OffsetX
      *
-     * @return int
+     * @return Measure
      */
-    public function getOffsetX(): int
+    public function getOffsetX(): Measure
     {
         return $this->offsetX;
     }
@@ -260,19 +261,18 @@ abstract class AbstractShape implements ComparableInterface
      *
      * @return $this
      */
-    public function setOffsetX(int $pValue = 0)
+    public function setOffsetX(Measure $pValue)
     {
         $this->offsetX = $pValue;
-
         return $this;
     }
 
     /**
      * Get OffsetY.
      *
-     * @return int
+     * @return Measure
      */
-    public function getOffsetY()
+    public function getOffsetY() : Measure
     {
         return $this->offsetY;
     }
@@ -282,17 +282,16 @@ abstract class AbstractShape implements ComparableInterface
      *
      * @return $this
      */
-    public function setOffsetY(int $pValue = 0)
+    public function setOffsetY(Measure $pValue)
     {
         $this->offsetY = $pValue;
-
         return $this;
     }
 
     /**
      * Get Width.
      *
-     * @return int
+     * @return Measure
      */
     public function getWidth()
     {
@@ -304,17 +303,16 @@ abstract class AbstractShape implements ComparableInterface
      *
      * @return $this
      */
-    public function setWidth(int $pValue = 0)
+    public function setWidth(Measure $pValue)
     {
         $this->width = $pValue;
-
         return $this;
     }
 
     /**
      * Get Height.
      *
-     * @return int
+     * @return Measure
      */
     public function getHeight()
     {
@@ -326,10 +324,9 @@ abstract class AbstractShape implements ComparableInterface
      *
      * @return $this
      */
-    public function setHeight(int $pValue = 0)
+    public function setHeight(Measure $pValue)
     {
         $this->height = $pValue;
-
         return $this;
     }
 
@@ -338,11 +335,10 @@ abstract class AbstractShape implements ComparableInterface
      *
      * @return self
      */
-    public function setWidthAndHeight(int $width = 0, int $height = 0)
+    public function setWidthAndHeight(Measure $width, Measure $height)
     {
         $this->width = $width;
         $this->height = $height;
-
         return $this;
     }
 
@@ -481,7 +477,16 @@ abstract class AbstractShape implements ComparableInterface
      */
     public function getHashCode(): string
     {
-        return md5((is_object($this->container) ? $this->container->getHashCode() : '') . $this->offsetX . $this->offsetY . $this->width . $this->height . $this->rotation . (is_null($this->getFill()) ? '' : $this->getFill()->getHashCode()) . (is_null($this->shadow) ? '' : $this->shadow->getHashCode()) . (is_null($this->hyperlink) ? '' : $this->hyperlink->getHashCode()) . __CLASS__);
+        return md5((is_object($this->container) ? $this->container->getHashCode() : '') . 
+            $this->offsetX->getHashCode() . 
+            $this->offsetY->getHashCode() . 
+            $this->width->getHashCode() . 
+            $this->height->getHashCode() . 
+            $this->rotation . 
+            (is_null($this->getFill()) ? '' : $this->getFill()->getHashCode()) . 
+            (is_null($this->shadow) ? '' : $this->shadow->getHashCode()) . 
+            (is_null($this->hyperlink) ? '' : $this->hyperlink->getHashCode()) .
+            __CLASS__);
     }
 
     /**

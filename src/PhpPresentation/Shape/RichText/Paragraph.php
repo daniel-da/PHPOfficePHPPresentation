@@ -100,7 +100,6 @@ class Paragraph implements ComparableInterface
      */
     public function __construct()
     {
-        echo 'c';
         $this->alignment = new Alignment();
         $this->font = new Font();
         $this->bulletStyle = new Bullet();
@@ -160,8 +159,8 @@ class Paragraph implements ComparableInterface
     public function setFont(Font $pFont = null): self
     {
         $this->font = $pFont;
-        echo "f:";
-        print_r($pFont);
+        // echo "f:";
+        //print_r($pFont);
         return $this;
     }
 

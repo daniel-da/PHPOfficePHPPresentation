@@ -20,6 +20,8 @@ declare(strict_types=1);
 
 namespace PhpOffice\PhpPresentation;
 
+use PhpOffice\PhpPresentation\Measure;
+
 /**
  * PhpOffice\PhpPresentation\GeometryCalculator.
  */
@@ -31,11 +33,11 @@ class GeometryCalculator
     /**
      * Calculate X and Y offsets for a set of shapes within a container such as a slide or group.
      *
-     * @return array<string, int>
+     * @return array<string, Measure>
      */
     public static function calculateOffsets(ShapeContainerInterface $container): array
     {
-        $offsets = [self::X => 0, self::Y => 0];
+        $offsets = [self::X => new Measure(), self::Y => new Measure()];
 
         if (null !== $container && 0 != count($container->getShapeCollection())) {
             $shapes = $container->getShapeCollection();
@@ -46,11 +48,11 @@ class GeometryCalculator
 
             foreach ($shapes as $shape) {
                 if (null !== $shape) {
-                    if ($shape->getOffsetX() < $offsets[self::X]) {
+                    if (Measure::lowerThan($shape->getOffsetX(), $offsets[self::X])) {
                         $offsets[self::X] = $shape->getOffsetX();
                     }
 
-                    if ($shape->getOffsetY() < $offsets[self::Y]) {
+                    if (Measure::lowerThan($shape->getOffsetY(), $offsets[self::Y])) {
                         $offsets[self::Y] = $shape->getOffsetY();
                     }
                 }
@@ -63,30 +65,28 @@ class GeometryCalculator
     /**
      * Calculate X and Y extents for a set of shapes within a container such as a slide or group.
      *
-     * @return array<string, int>
+     * @return array<string, Measure>
      */
     public static function calculateExtents(ShapeContainerInterface $container): array
     {
-        /** @var array<string, int> $extents */
-        $extents = [self::X => 0, self::Y => 0];
+        /** @var array<string, Measure> $extents */
+        $extents = [self::X => new Measure(), self::Y => new Measure()];
 
         if (null !== $container && 0 != count($container->getShapeCollection())) {
             $shapes = $container->getShapeCollection();
             if (null !== $shapes[0]) {
-                $extents[self::X] = (int) ($shapes[0]->getOffsetX() + $shapes[0]->getWidth());
-                $extents[self::Y] = (int) ($shapes[0]->getOffsetY() + $shapes[0]->getHeight());
+                $extents[self::X] = Measure::add($shapes[0]->getOffsetX(), $shapes[0]->getWidth());
+                $extents[self::Y] = Measure::add($shapes[0]->getOffsetY(), $shapes[0]->getHeight());
             }
 
             foreach ($shapes as $shape) {
                 if (null !== $shape) {
-                    $extentX = (int) ($shape->getOffsetX() + $shape->getWidth());
-                    $extentY = (int) ($shape->getOffsetY() + $shape->getHeight());
-
-                    if ($extentX > $extents[self::X]) {
+                    $extentX = Measure::add($shape->getOffsetX(), $shape->getWidth());
+                    $extentY = Measure::add($shape->getOffsetY(), $shape->getHeight());
+                    if (Measure::greaterThan($extentX, $extents[self::X])) {
                         $extents[self::X] = $extentX;
                     }
-
-                    if ($extentY > $extents[self::Y]) {
+                    if (Measure::greaterThan($extentY, $extents[self::Y])) {
                         $extents[self::Y] = $extentY;
                     }
                 }

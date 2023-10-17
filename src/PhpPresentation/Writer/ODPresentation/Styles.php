@@ -24,6 +24,7 @@ use PhpOffice\Common\Adapter\Zip\ZipInterface;
 use PhpOffice\Common\Drawing as CommonDrawing;
 use PhpOffice\Common\Text;
 use PhpOffice\Common\XMLWriter;
+use PhpOffice\PhpPresentation\Measure;
 use PhpOffice\PhpPresentation\Shape\Group;
 use PhpOffice\PhpPresentation\Shape\RichText;
 use PhpOffice\PhpPresentation\Shape\Table;
@@ -149,10 +150,10 @@ class Styles extends AbstractDecoratorWriter
         $objWriter->writeAttribute('fo:margin-bottom', '0cm');
         $objWriter->writeAttribute('fo:margin-left', '0cm');
         $objWriter->writeAttribute('fo:margin-right', '0cm');
-        $objWriter->writeAttribute('fo:page-width', Text::numberFormat(CommonDrawing::pixelsToCentimeters(CommonDrawing::emuToPixels((int) $this->getPresentation()->getLayout()->getCX())), 1) . 'cm');
-        $objWriter->writeAttribute('fo:page-height', Text::numberFormat(CommonDrawing::pixelsToCentimeters(CommonDrawing::emuToPixels((int) $this->getPresentation()->getLayout()->getCY())), 1) . 'cm');
+        $objWriter->writeAttribute('fo:page-width', $this->getPresentation()->getLayout()->getCXForUnit(Measure::UNIT_CENTIMETER) . 'cm');
+        $objWriter->writeAttribute('fo:page-height', $this->getPresentation()->getLayout()->getCYForUnit(Measure::UNIT_CENTIMETER) . 'cm');
         $printOrientation = 'portrait';
-        if ($this->getPresentation()->getLayout()->getCX() > $this->getPresentation()->getLayout()->getCY()) {
+        if ($this->getPresentation()->getLayout()->getCX()->getValue() > $this->getPresentation()->getLayout()->getCY()->getValue()) {
             $printOrientation = 'landscape';
         }
         $objWriter->writeAttribute('style:print-orientation', $printOrientation);

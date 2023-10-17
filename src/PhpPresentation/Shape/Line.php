@@ -21,6 +21,7 @@ declare(strict_types=1);
 namespace PhpOffice\PhpPresentation\Shape;
 
 use PhpOffice\PhpPresentation\AbstractShape;
+use PhpOffice\PhpPresentation\Measure;
 use PhpOffice\PhpPresentation\ComparableInterface;
 use PhpOffice\PhpPresentation\Style\Border;
 
@@ -32,20 +33,22 @@ class Line extends AbstractShape implements ComparableInterface
     /**
      * Create a new \PhpOffice\PhpPresentation\Shape\Line instance.
      *
-     * @param int $fromX
-     * @param int $fromY
-     * @param int $toX
-     * @param int $toY
+     * @param float $fromX
+     * @param float $fromY
+     * @param float $toX
+     * @param float $toY
+     * @param string $unit
+     * 
      */
-    public function __construct($fromX, $fromY, $toX, $toY)
+    public function __construct($fromX, $fromY, $toX, $toY, $unit)
     {
         parent::__construct();
         $this->getBorder()->setLineStyle(Border::LINE_SINGLE);
 
-        $this->setOffsetX($fromX);
-        $this->setOffsetY($fromY);
-        $this->setWidth($toX - $fromX);
-        $this->setHeight($toY - $fromY);
+        $this->setOffsetX(new Measure($fromX, $unit));
+        $this->setOffsetY(new Measure($fromY, $unit));
+        $this->setWidth(new Measure($toX - $fromX, $unit));
+        $this->setHeight(new Measure($toY - $fromY, $unit));
     }
 
     /**

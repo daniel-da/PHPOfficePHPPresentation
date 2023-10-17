@@ -24,6 +24,7 @@ use PhpOffice\Common\Adapter\Zip\ZipInterface;
 use PhpOffice\Common\Drawing as CommonDrawing;
 use PhpOffice\Common\Text;
 use PhpOffice\Common\XMLWriter;
+use PhpOffice\PhpPresentation\Measure;
 use PhpOffice\PhpPresentation\PresentationProperties;
 use PhpOffice\PhpPresentation\Shape\Chart;
 use PhpOffice\PhpPresentation\Shape\Comment;
@@ -45,6 +46,7 @@ use PhpOffice\PhpPresentation\Style\Alignment;
 use PhpOffice\PhpPresentation\Style\Border;
 use PhpOffice\PhpPresentation\Style\Fill;
 use PhpOffice\PhpPresentation\Style\Font;
+use PhpOffice\PhpPresentation\Style\FontFace;
 use PhpOffice\PhpPresentation\Style\Shadow;
 
 class Content extends AbstractDecoratorWriter
@@ -71,6 +73,13 @@ class Content extends AbstractDecoratorWriter
     protected $arrStyleTextFont = [];
 
     /**
+     * Stores font styles for text shapes that include lists.
+     *
+     * @var array<string, FontFace>
+     */
+    protected $arrStyleFontFace = [];
+
+    /**
      * Used to track the current shape ID.
      *
      * @var int
@@ -92,7 +101,7 @@ class Content extends AbstractDecoratorWriter
     protected function writeContent(): string
     {
         // Create XML writer
-        $objWriter = new XMLWriter(XMLWriter::STORAGE_MEMORY);
+        $objWriter = new XMLWriter(XMLWriter::STORAGE_MEMORY, null, true);
         $objWriter->startDocument('1.0', 'UTF-8');
 
         // office:document-content
@@ -130,6 +139,43 @@ class Content extends AbstractDecoratorWriter
         $objWriter->writeAttribute('xmlns:officeooo', 'http://openoffice.org/2009/office');
         $objWriter->writeAttribute('xmlns:loext', 'urn:org:documentfoundation:names:experimental:office:xmlns:loext:1.0');
         $objWriter->writeAttribute('office:version', '1.2');
+
+        // office:font-face-decls
+        
+        $objWriter->startElement('office:font-face-decls');
+        foreach ($this->getPresentation()->getAllSlides() as $pSlide) {
+            // Slides
+            $shapes = $pSlide->getShapeCollection();
+            foreach ($shapes as $shape) {
+                // Check type
+                if ($shape instanceof RichText) {
+                    $paragraphs = $shape->getParagraphs();
+                    foreach ($paragraphs as $paragraph) {
+                        $richtexts = $paragraph->getRichTextElements();
+                        foreach ($richtexts as $richtext) {
+                            // Not a line break
+                            if ($richtext instanceof Run) {
+                                // Style des font text
+                                $ff = $richtext->getFont()->getFontFaces();
+                                if (isset($ff['']) && !isset($this->arrStyleFontFace[$ff['']->getHashCode()])) {
+                                    $this->writeFontFaceStyle($objWriter, $ff['']);
+                                    $this->arrStyleFontFace[$ff['']->getHashCode()] = $ff[''];
+                                }
+                                if (isset($ff['asian']) && !isset($this->arrStyleFontFace[$ff['asian']->getHashCode()])) {
+                                    $this->writeFontFaceStyle($objWriter, $ff['asian']);
+                                    $this->arrStyleFontFace[$ff['asian']->getHashCode()] = $ff['asian'];
+                                }
+                                if (isset($ff['complex']) && !isset($this->arrStyleFontFace[$ff['complex']->getHashCode()])) {
+                                    $this->writeFontFaceStyle($objWriter, $ff['complex']);
+                                    $this->arrStyleFontFace[$ff['complex']->getHashCode()] = $ff['complex'];
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        $objWriter->endElement();
 
         // office:automatic-styles
         $objWriter->startElement('office:automatic-styles');
@@ -249,9 +295,10 @@ class Content extends AbstractDecoratorWriter
                         $objWriter->writeAttribute('fo:text-align', 'justify');
                         break;
                     default:
-                        $objWriter->writeAttribute('fo:text-align', 'left');
+                        $objWriter->writeAttribute('fo:text-align', $item->getAlignment()->getHorizontal());
                         break;
                 }
+
                 $objWriter->writeAttribute(
                     'style:writing-mode',
                     $item->getAlignment()->isRTL() ? 'rl-tb' : 'lr-tb'
@@ -271,26 +318,46 @@ class Content extends AbstractDecoratorWriter
                 // style:style > style:text-properties
                 $objWriter->startElement('style:text-properties');
                 $objWriter->writeAttribute('fo:color', '#' . $item->getFont()->getColor()->getRGB());
+
+                $other = true;
+                $fontNames = $item->getFont()->getFontFaces();
+                if (@$fontNames['']) {
+                    $objWriter->writeAttribute('fo:font-name', str_replace("'",'',$fontNames['']->getName()).$fontNames['']->getCount());
+                    $other = false;
+                } 
+                if (@$fontNames['asian']) {
+                    $objWriter->writeAttribute('style:font-name-asian', str_replace("'",'',$fontNames['asian']->getName()).$fontNames['']->getCount());
+                    $other = false;
+                } 
+                if (@$fontNames['complex']) {
+                    $objWriter->writeAttribute('style:font-name-complex', str_replace("'",'',$fontNames['complex']->getName()).$fontNames['']->getCount());
+                    $other = false;
+                } 
+                if ($other) {
+                    $fontName = $item->getFont()->getName();
+                    $objWriter->writeAttribute('fo:font-family', $fontName);
+                    $objWriter->writeAttribute('style:font-family-asian', $fontName);
+                    $objWriter->writeAttribute('style:font-family-complex', $fontName);
+                } 
+
+                $objWriter->writeAttribute('fo:font-size', $item->getFont()->getSize() . 'pt');
+                $objWriter->writeAttributeIf($item->getFont()->isBold(), 'fo:font-weight', 'bold');
+                $objWriter->writeAttribute('fo:language', ($item->getLanguage() ? $item->getLanguage() : 'en'));
+                $objWriter->writeAttribute('style:font-size-asian', $item->getFont()->getSize() . 'pt');
+                $objWriter->writeAttributeIf($item->getFont()->isBold(), 'style:font-weight-asian', 'bold');
+                $objWriter->writeAttribute('style:language-asian', ($item->getLanguage() ? $item->getLanguage() : 'en'));
+                $objWriter->writeAttribute('style:font-size-complex', $item->getFont()->getSize() . 'pt');
+                $objWriter->writeAttributeIf($item->getFont()->isBold(), 'style:font-weight-complex', 'bold');
+                $objWriter->writeAttribute('style:language-complex', ($item->getLanguage() ? $item->getLanguage() : 'en'));
+
                 switch ($item->getFont()->getFormat()) {
                     case Font::FORMAT_LATIN:
-                        $objWriter->writeAttribute('fo:font-family', $item->getFont()->getName());
-                        $objWriter->writeAttribute('fo:font-size', $item->getFont()->getSize() . 'pt');
-                        $objWriter->writeAttributeIf($item->getFont()->isBold(), 'fo:font-weight', 'bold');
-                        $objWriter->writeAttribute('fo:language', ($item->getLanguage() ? $item->getLanguage() : 'en'));
                         $objWriter->writeAttribute('style:script-type', 'latin');
                         break;
                     case Font::FORMAT_EAST_ASIAN:
-                        $objWriter->writeAttribute('style:font-family-asian', $item->getFont()->getName());
-                        $objWriter->writeAttribute('style:font-size-asian', $item->getFont()->getSize() . 'pt');
-                        $objWriter->writeAttributeIf($item->getFont()->isBold(), 'style:font-weight-asian', 'bold');
-                        $objWriter->writeAttribute('style:language-asian', ($item->getLanguage() ? $item->getLanguage() : 'en'));
                         $objWriter->writeAttribute('style:script-type', 'asian');
                         break;
                     case Font::FORMAT_COMPLEX_SCRIPT:
-                        $objWriter->writeAttribute('style:font-family-complex', $item->getFont()->getName());
-                        $objWriter->writeAttribute('style:font-size-complex', $item->getFont()->getSize() . 'pt');
-                        $objWriter->writeAttributeIf($item->getFont()->isBold(), 'style:font-weight-complex', 'bold');
-                        $objWriter->writeAttribute('style:language-complex', ($item->getLanguage() ? $item->getLanguage() : 'en'));
                         $objWriter->writeAttribute('style:script-type', 'complex');
                         break;
                 }
@@ -387,10 +454,10 @@ class Content extends AbstractDecoratorWriter
         // draw:frame
         $objWriter->startElement('draw:frame');
         $objWriter->writeAttribute('draw:name', $shape->getName());
-        $objWriter->writeAttribute('svg:width', Text::numberFormat(CommonDrawing::pixelsToCentimeters((int) $shape->getWidth()), 3) . 'cm');
-        $objWriter->writeAttribute('svg:height', Text::numberFormat(CommonDrawing::pixelsToCentimeters((int) $shape->getHeight()), 3) . 'cm');
-        $objWriter->writeAttribute('svg:x', Text::numberFormat(CommonDrawing::pixelsToCentimeters((int) $shape->getOffsetX()), 3) . 'cm');
-        $objWriter->writeAttribute('svg:y', Text::numberFormat(CommonDrawing::pixelsToCentimeters((int) $shape->getOffsetY()), 3) . 'cm');
+        $objWriter->writeAttribute('svg:width', $shape->getWidth()->getValueForUnit(Measure::UNIT_CENTIMETER) . 'cm');
+        $objWriter->writeAttribute('svg:height', $shape->getHeight()->getValueForUnit(Measure::UNIT_CENTIMETER) . 'cm');
+        $objWriter->writeAttribute('svg:x', $shape->getOffsetX()->getValueForUnit(Measure::UNIT_CENTIMETER) . 'cm');
+        $objWriter->writeAttribute('svg:y', $shape->getOffsetY()->getValueForUnit(Measure::UNIT_CENTIMETER) . 'cm');
         $objWriter->writeAttribute('draw:style-name', 'gr' . $this->shapeId);
         // draw:frame > draw:plugin
         $objWriter->startElement('draw:plugin');
@@ -434,10 +501,10 @@ class Content extends AbstractDecoratorWriter
         // draw:frame
         $objWriter->startElement('draw:frame');
         $objWriter->writeAttribute('draw:name', $shape->getName());
-        $objWriter->writeAttribute('svg:width', Text::numberFormat(CommonDrawing::pixelsToCentimeters((int) $shape->getWidth()), 3) . 'cm');
-        $objWriter->writeAttribute('svg:height', Text::numberFormat(CommonDrawing::pixelsToCentimeters((int) $shape->getHeight()), 3) . 'cm');
-        $objWriter->writeAttribute('svg:x', Text::numberFormat(CommonDrawing::pixelsToCentimeters((int) $shape->getOffsetX()), 3) . 'cm');
-        $objWriter->writeAttribute('svg:y', Text::numberFormat(CommonDrawing::pixelsToCentimeters((int) $shape->getOffsetY()), 3) . 'cm');
+        $objWriter->writeAttribute('svg:width', $shape->getWidth()->getValueForUnit(Measure::UNIT_CENTIMETER) . 'cm');
+        $objWriter->writeAttribute('svg:height', $shape->getHeight()->getValueForUnit(Measure::UNIT_CENTIMETER) . 'cm');
+        $objWriter->writeAttribute('svg:x', $shape->getOffsetX()->getValueForUnit(Measure::UNIT_CENTIMETER) . 'cm');
+        $objWriter->writeAttribute('svg:y', $shape->getOffsetY()->getValueForUnit(Measure::UNIT_CENTIMETER) . 'cm');
         $objWriter->writeAttribute('draw:style-name', 'gr' . $this->shapeId);
         // draw:image
         $objWriter->startElement('draw:image');
@@ -479,10 +546,10 @@ class Content extends AbstractDecoratorWriter
         // draw:frame
         $objWriter->startElement('draw:frame');
         $objWriter->writeAttribute('draw:style-name', 'gr' . $this->shapeId);
-        $objWriter->writeAttribute('svg:width', Text::numberFormat(CommonDrawing::pixelsToCentimeters((int) $shape->getWidth()), 3) . 'cm');
-        $objWriter->writeAttribute('svg:height', Text::numberFormat(CommonDrawing::pixelsToCentimeters((int) $shape->getHeight()), 3) . 'cm');
-        $objWriter->writeAttribute('svg:x', Text::numberFormat(CommonDrawing::pixelsToCentimeters((int) $shape->getOffsetX()), 3) . 'cm');
-        $objWriter->writeAttribute('svg:y', Text::numberFormat(CommonDrawing::pixelsToCentimeters((int) $shape->getOffsetY()), 3) . 'cm');
+        $objWriter->writeAttribute('svg:width', $shape->getWidth()->getValueForUnit(Measure::UNIT_CENTIMETER) . 'cm');
+        $objWriter->writeAttribute('svg:height', $shape->getHeight()->getValueForUnit(Measure::UNIT_CENTIMETER) . 'cm');
+        $objWriter->writeAttribute('svg:x', $shape->getOffsetX()->getValueForUnit(Measure::UNIT_CENTIMETER) . 'cm');
+        $objWriter->writeAttribute('svg:y', $shape->getOffsetY()->getValueForUnit(Measure::UNIT_CENTIMETER) . 'cm');
         // draw:text-box
         $objWriter->startElement('draw:text-box');
 
@@ -510,12 +577,13 @@ class Content extends AbstractDecoratorWriter
                 // text:p
                 $objWriter->startElement('text:p');
                 $objWriter->writeAttribute('text:style-name', 'P_' . $paragraph->getHashCode());
-
+                
                 // Loop trough rich text elements
                 $richtexts = $paragraph->getRichTextElements();
                 $richtextId = 0;
                 foreach ($richtexts as $richtext) {
                     ++$richtextId;
+                    
                     if ($richtext instanceof TextElement) {
                         // text:span
                         $objWriter->startElement('text:span');
@@ -656,10 +724,10 @@ class Content extends AbstractDecoratorWriter
         // draw:line
         $objWriter->startElement('draw:line');
         $objWriter->writeAttribute('draw:style-name', 'gr' . $this->shapeId);
-        $objWriter->writeAttribute('svg:x1', Text::numberFormat(CommonDrawing::pixelsToCentimeters((int) $shape->getOffsetX()), 3) . 'cm');
-        $objWriter->writeAttribute('svg:y1', Text::numberFormat(CommonDrawing::pixelsToCentimeters((int) $shape->getOffsetY()), 3) . 'cm');
-        $objWriter->writeAttribute('svg:x2', Text::numberFormat(CommonDrawing::pixelsToCentimeters((int) $shape->getOffsetX() + $shape->getWidth()), 3) . 'cm');
-        $objWriter->writeAttribute('svg:y2', Text::numberFormat(CommonDrawing::pixelsToCentimeters((int) $shape->getOffsetY() + $shape->getHeight()), 3) . 'cm');
+        $objWriter->writeAttribute('svg:x1', $shape->getOffsetX()->getValueForUnit(Measure::UNIT_CENTIMETER) . 'cm');
+        $objWriter->writeAttribute('svg:y1', $shape->getOffsetY()->getValueForUnit(Measure::UNIT_CENTIMETER) . 'cm');
+        $objWriter->writeAttribute('svg:x2', Measure::add($shape->getOffsetX(), $shape->getWidth())->getValueForUnit(Measure::UNIT_CENTIMETER) . 'cm');
+        $objWriter->writeAttribute('svg:y2', Measure::add($shape->getOffsetY(), $shape->getHeight())->getValueForUnit(Measure::UNIT_CENTIMETER) . 'cm');
 
         // text:p
         $objWriter->writeElement('text:p');
@@ -674,10 +742,10 @@ class Content extends AbstractDecoratorWriter
     {
         // draw:frame
         $objWriter->startElement('draw:frame');
-        $objWriter->writeAttribute('svg:x', Text::numberFormat(CommonDrawing::pixelsToCentimeters((int) $shape->getOffsetX()), 3) . 'cm');
-        $objWriter->writeAttribute('svg:y', Text::numberFormat(CommonDrawing::pixelsToCentimeters((int) $shape->getOffsetY()), 3) . 'cm');
-        $objWriter->writeAttribute('svg:height', Text::numberFormat(CommonDrawing::pixelsToCentimeters((int) $shape->getHeight()), 3) . 'cm');
-        $objWriter->writeAttribute('svg:width', Text::numberFormat(CommonDrawing::pixelsToCentimeters((int) $shape->getWidth()), 3) . 'cm');
+        $objWriter->writeAttribute('svg:x', $shape->getOffsetX()->getValueForUnit(Measure::UNIT_CENTIMETER) . 'cm');
+        $objWriter->writeAttribute('svg:y', $shape->getOffsetY()->getValueForUnit(Measure::UNIT_CENTIMETER) . 'cm');
+        $objWriter->writeAttribute('svg:height', $shape->getHeight()->getValueForUnit(Measure::UNIT_CENTIMETER) . 'cm');
+        $objWriter->writeAttribute('svg:width', $shape->getWidth()->getValueForUnit(Measure::UNIT_CENTIMETER) . 'cm');
 
         $arrayRows = $shape->getRows();
         if (!empty($arrayRows)) {
@@ -773,10 +841,10 @@ class Content extends AbstractDecoratorWriter
         // draw:frame
         $objWriter->startElement('draw:frame');
         $objWriter->writeAttribute('draw:name', $shape->getTitle()->getText());
-        $objWriter->writeAttribute('svg:x', Text::numberFormat(CommonDrawing::pixelsToCentimeters((int) $shape->getOffsetX()), 3) . 'cm');
-        $objWriter->writeAttribute('svg:y', Text::numberFormat(CommonDrawing::pixelsToCentimeters((int) $shape->getOffsetY()), 3) . 'cm');
-        $objWriter->writeAttribute('svg:height', Text::numberFormat(CommonDrawing::pixelsToCentimeters((int) $shape->getHeight()), 3) . 'cm');
-        $objWriter->writeAttribute('svg:width', Text::numberFormat(CommonDrawing::pixelsToCentimeters((int) $shape->getWidth()), 3) . 'cm');
+        $objWriter->writeAttribute('svg:x', $shape->getOffsetX()->getValueForUnit(Measure::UNIT_CENTIMETER) . 'cm');
+        $objWriter->writeAttribute('svg:y', $shape->getOffsetY()->getValueForUnit(Measure::UNIT_CENTIMETER) . 'cm');
+        $objWriter->writeAttribute('svg:height', $shape->getHeight()->getValueForUnit(Measure::UNIT_CENTIMETER) . 'cm');
+        $objWriter->writeAttribute('svg:width', $shape->getWidth()->getValueForUnit(Measure::UNIT_CENTIMETER) . 'cm');
 
         // draw:object
         $objWriter->startElement('draw:object');
@@ -1143,6 +1211,26 @@ class Content extends AbstractDecoratorWriter
 
             $objWriter->endElement();
         }
+    }
+
+    protected function writeFontFaceStyle(XMLWriter $objWriter, FontFace $ff): void
+    {
+        // style:style
+        $objWriter->startElement('style:font-face');
+
+        if (null !== ($ff->getHashCode())) {
+            $objWriter->writeAttribute('style:name', str_replace("'",'',$ff->getName()).$ff->getCount());
+        }
+        if (null !== ($ff->getFontFamily())) {
+            $objWriter->writeAttribute('svg:font-family', $ff->getFontFamily());
+        }
+        if (null !== ($ff->getFontFamilyGeneric())) {
+            $objWriter->writeAttribute('style:font-family-generic', $ff->getFontFamilyGeneric());
+        }
+        if (null !== ($ff->getFontPitch())) {
+            $objWriter->writeAttribute('style:font-pitch', $ff->getFontPitch());
+        }
+        $objWriter->endElement();
     }
 
     /**
