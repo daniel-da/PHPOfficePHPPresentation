@@ -23,6 +23,7 @@ namespace PhpOffice\PhpPresentation\Writer\PowerPoint2007;
 use PhpOffice\Common\Adapter\Zip\ZipInterface;
 use PhpOffice\Common\Drawing as CommonDrawing;
 use PhpOffice\Common\XMLWriter;
+use PhpOffice\PhpPresentation\Measure;
 use PhpOffice\PhpPresentation\Shape\Comment;
 use PhpOffice\PhpPresentation\Slide;
 
@@ -83,8 +84,8 @@ class PptComments extends AbstractDecoratorWriter
             // Uses 1/8pt for positionning
             // @link : https://social.msdn.microsoft.com/Forums/fr-FR/ebdc12f2-0cff-4fa8-b901-fa6e3198364e/comment-position-units
             $objWriter->startElement('p:pos');
-            $objWriter->writeAttribute('x', (int) CommonDrawing::pixelsToPoints($oComment->getOffsetX() * 8));
-            $objWriter->writeAttribute('y', (int) CommonDrawing::pixelsToPoints($oComment->getOffsetY() * 8));
+            $objWriter->writeAttribute('x', $oComment->getOffsetX()->getValueForUnit(Measure::UNIT_EMU) * 8);
+            $objWriter->writeAttribute('y', $oComment->getOffsetY()->getValueForUnit(Measure::UNIT_EMU) * 8);
             $objWriter->endElement();
 
             // p:cmLst > p:cm > p:text

@@ -123,14 +123,14 @@ class DocumentLayout
             case self::LAYOUT_LETTER:
             case self::LAYOUT_OVERHEAD:
                 $this->layout = $pValue;
-                $this->dimensionX = $this->dimension[$this->layout]['cx'];
-                $this->dimensionY = $this->dimension[$this->layout]['cy'];
+                $this->dimensionX = new Measure($this->dimension[$this->layout]['cx'], Measure::UNIT_EMU);
+                $this->dimensionY = new Measure($this->dimension[$this->layout]['cy'], Measure::UNIT_EMU);
                 break;
             case self::LAYOUT_CUSTOM:
             default:
                 $this->layout = self::LAYOUT_CUSTOM;
-                $this->dimensionX = $pValue['cx'];
-                $this->dimensionY = $pValue['cy'];
+                $this->dimensionX = new Measure($pValue['cx'], Measure::UNIT_EMU);
+                $this->dimensionY = new Measure($pValue['cy'], Measure::UNIT_EMU);
                 break;
         }
 

@@ -268,7 +268,7 @@ class Measure implements ComparableInterface
                 $value /= 914400.0;
                 break;
             case self::UNIT_PIXEL:
-                $value = Drawing::emuToPixels((int) $value);
+                $value = (int) round($value / 9525.0);;
                 break;
             case self::UNIT_POINT:
                 $value /= 12700.0;
@@ -280,5 +280,6 @@ class Measure implements ComparableInterface
 
         return $value;
     }
+
 
 }
