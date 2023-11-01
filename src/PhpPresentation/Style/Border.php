@@ -21,6 +21,7 @@ declare(strict_types=1);
 namespace PhpOffice\PhpPresentation\Style;
 
 use PhpOffice\PhpPresentation\ComparableInterface;
+use PhpOffice\PhpPresentation\Measure;
 
 class Border implements ComparableInterface
 {
@@ -48,9 +49,16 @@ class Border implements ComparableInterface
     /**
      * Line width.
      *
-     * @var int
+     * @var Measure
      */
-    private $lineWidth = 1;
+    private $lineWidth;
+
+    /**
+     * min Height.
+     *
+     * @var Measure|null
+     */
+    private $minHeight;
 
     /**
      * Line style.
@@ -83,14 +91,15 @@ class Border implements ComparableInterface
     public function __construct()
     {
         $this->color = new Color(Color::COLOR_BLACK);
+        $this->lineWidth = Measure::toMeasure('1px');
     }
 
     /**
      * Get line width (in points).
      *
-     * @return int
+     * @return Measure
      */
-    public function getLineWidth(): int
+    public function getLineWidth(): Measure
     {
         return $this->lineWidth;
     }
@@ -98,14 +107,13 @@ class Border implements ComparableInterface
     /**
      * Set line width (in points).
      *
-     * @param int $pValue
+     * @param Measure $pValue
      *
      * @return self
      */
-    public function setLineWidth(int $pValue = 1): self
+    public function setLineWidth(Measure $pValue): self
     {
         $this->lineWidth = $pValue;
-
         return $this;
     }
 
@@ -164,6 +172,28 @@ class Border implements ComparableInterface
     }
 
     /**
+     * Get line width (in points).
+     *
+     * @return Measure|null
+     */
+    public function getMinHeight(): Measure|null
+    {
+        return $this->minHeight;
+    }
+
+    /**
+     * Set line width (in points).
+     *
+     * @param Measure $pValue
+     *
+     * @return self
+     */
+    public function setMinHeight(Measure $pValue): self
+    {
+        $this->minHeight = $pValue;
+        return $this;
+    }
+    /**
      * Get Border Color.
      *
      * @return Color
@@ -198,6 +228,7 @@ class Border implements ComparableInterface
             $this->lineStyle
             . $this->lineWidth
             . $this->dashStyle
+            . (($this->minHeight!=null) ? $this->minHeight->getHashCode() : '')
             . $this->color->getHashCode()
             . __CLASS__
         );

@@ -37,6 +37,7 @@ use PhpOffice\PhpPresentation\Shape\RichText;
 use PhpOffice\PhpPresentation\Shape\RichText\Paragraph;
 use PhpOffice\PhpPresentation\Slide\Background\Image;
 use PhpOffice\PhpPresentation\Style\Alignment;
+use PhpOffice\PhpPresentation\Style\Border;
 use PhpOffice\PhpPresentation\Style\Bullet;
 use PhpOffice\PhpPresentation\Style\Color;
 use PhpOffice\PhpPresentation\Style\Fill;
@@ -363,6 +364,16 @@ class ODPresentation implements ReaderInterface
                         break;
                 }
             }
+            // Read others
+            if ($nodeGraphicProps->hasAttribute('svg:stroke-color')) {
+                $value = $nodeGraphicProps->getAttribute('svg:stroke-color');
+                $color = Color::strToColor($value);
+                $oBorder = new Border();
+                $oBorder->setColor($color);
+                if ($nodeGraphicProps->getAttribute('fo:min-height')) {
+                    $oBorder->setMinHeight(Measure::toMeasure($nodeGraphicProps->getAttribute('fo:min-height')));
+                }
+            }
         }
 
         $nodeTextProperties = $this->oXMLReader->getElement('style:text-properties', $nodeStyle);
@@ -512,6 +523,7 @@ class ODPresentation implements ReaderInterface
             'background' => $oBackground ?? null,
             'fill' => $oFill ?? null,
             'font' => $oFont ?? null,
+            'border' => $oBorder ?? null,
             'shadow' => $oShadow ?? null,
             'listStyle' => $arrayListStyle ?? null,
             'spacingAfter' => $spacingAfter ?? null,
@@ -552,7 +564,22 @@ class ODPresentation implements ReaderInterface
                 }
             }
         }
-
+        foreach ($this->oXMLReader->getElements('draw:custom-shape', $nodeSlide) as $oNodeFrame) {
+            if ($oNodeFrame instanceof DOMElement) {
+                if ($this->oXMLReader->getElement('draw:enhanced-geometry', $oNodeFrame)) {
+                    //$this->loadShapeDrawing($oNodeFrame);
+                    continue;
+                }
+                if ($this->oXMLReader->getElement('text:p', $oNodeFrame)) {
+                    //$this->loadShapeRichText($oNodeFrame);
+                    continue;
+                }
+                if ($this->oXMLReader->getElement('office:event-listeners', $oNodeFrame)) {
+                    //$this->loadShapeRichText($oNodeFrame);
+                    continue;
+                }
+            }
+        }
         return true;
     }
 
@@ -763,8 +790,6 @@ class ODPresentation implements ReaderInterface
                 $this->loadFontFace($oElement);
             }
         }
-
-        print_r($this->arrayFontFaces);
 
         foreach ($this->oXMLReader->getElements('/office:document-styles/office:automatic-styles/*') as $oElement) {
             if ($oElement instanceof DOMElement && $oElement->hasAttribute('style:name')) {

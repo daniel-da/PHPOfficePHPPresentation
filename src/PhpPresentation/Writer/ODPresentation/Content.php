@@ -958,7 +958,7 @@ class Content extends AbstractDecoratorWriter
             $objWriter->writeAttribute('draw:stroke', 'none');
         } else {
             $objWriter->writeAttribute('svg:stroke-color', '#' . $shape->getBorder()->getColor()->getRGB());
-            $objWriter->writeAttribute('svg:stroke-width', number_format(CommonDrawing::pointsToCentimeters($shape->getBorder()->getLineWidth()), 3, '.', '') . 'cm');
+            $objWriter->writeAttribute('svg:stroke-width', $shape->getBorder()->getLineWidth()->getValueForUnit(Measure::UNIT_CENTIMETER) . 'cm');
             switch ($shape->getBorder()->getDashStyle()) {
                 case Border::DASH_SOLID:
                     $objWriter->writeAttribute('draw:stroke', 'solid');
@@ -980,6 +980,9 @@ class Content extends AbstractDecoratorWriter
                     $objWriter->writeAttribute('draw:stroke', 'none');
                     break;
             }
+        }
+        if ($shape->getBorder()->getMinHeight() != null) {
+            $objWriter->writeAttribute('fo:min-height', $shape->getBorder()->getMinHeight()->getValueForUnit(Measure::UNIT_CENTIMETER) . 'cm');
         }
 
         $objWriter->writeAttribute('fo:wrap-option', 'wrap');
@@ -1072,7 +1075,7 @@ class Content extends AbstractDecoratorWriter
                 break;
         }
         $objWriter->writeAttribute('svg:stroke-color', '#' . $shape->getBorder()->getColor()->getRGB());
-        $objWriter->writeAttribute('svg:stroke-width', Text::numberFormat(CommonDrawing::pointsToCentimeters($shape->getBorder()->getLineWidth()), 3) . 'cm');
+        $objWriter->writeAttribute('svg:stroke-width', $shape->getBorder()->getLineWidth()->getValueForUnit(Measure::UNIT_CENTIMETER) . 'cm');
         $objWriter->endElement();
 
         $objWriter->endElement();
@@ -1128,7 +1131,7 @@ class Content extends AbstractDecoratorWriter
                     && $cellBordersBottomHashCode == $cellBorders->getLeft()->getHashCode()
                     && $cellBordersBottomHashCode == $cellBorders->getRight()->getHashCode()) {
                     $lineStyle = 'none';
-                    $lineWidth = Text::numberFormat($cellBorders->getBottom()->getLineWidth() / 1.75, 2);
+                    $lineWidth = Text::numberFormat($cellBorders->getBottom()->getLineWidth()->getValueForUnit(Measure::UNIT_POINT) / 1.75, 2);
                     $lineColor = $cellBorders->getBottom()->getColor()->getRGB();
                     switch ($cellBorders->getBottom()->getLineStyle()) {
                         case Border::LINE_SINGLE:
@@ -1137,7 +1140,7 @@ class Content extends AbstractDecoratorWriter
                     $objWriter->writeAttribute('fo:border', $lineWidth . 'pt ' . $lineStyle . ' #' . $lineColor);
                 } else {
                     $lineStyle = 'none';
-                    $lineWidth = Text::numberFormat($cellBorders->getBottom()->getLineWidth() / 1.75, 2);
+                    $lineWidth = Text::numberFormat($cellBorders->getBottom()->getLineWidth()->getValueForUnit(Measure::UNIT_POINT) / 1.75, 2);
                     $lineColor = $cellBorders->getBottom()->getColor()->getRGB();
                     switch ($cellBorders->getBottom()->getLineStyle()) {
                         case Border::LINE_SINGLE:
@@ -1146,7 +1149,7 @@ class Content extends AbstractDecoratorWriter
                     $objWriter->writeAttribute('fo:border-bottom', $lineWidth . 'pt ' . $lineStyle . ' #' . $lineColor);
                     // TOP
                     $lineStyle = 'none';
-                    $lineWidth = Text::numberFormat($cellBorders->getTop()->getLineWidth() / 1.75, 2);
+                    $lineWidth = Text::numberFormat($cellBorders->getTop()->getLineWidth()->getValueForUnit(Measure::UNIT_POINT) / 1.75, 2);
                     $lineColor = $cellBorders->getTop()->getColor()->getRGB();
                     switch ($cellBorders->getTop()->getLineStyle()) {
                         case Border::LINE_SINGLE:
@@ -1155,7 +1158,7 @@ class Content extends AbstractDecoratorWriter
                     $objWriter->writeAttribute('fo:border-top', $lineWidth . 'pt ' . $lineStyle . ' #' . $lineColor);
                     // RIGHT
                     $lineStyle = 'none';
-                    $lineWidth = Text::numberFormat($cellBorders->getRight()->getLineWidth() / 1.75, 2);
+                    $lineWidth = Text::numberFormat($cellBorders->getRight()->getLineWidth()->getValueForUnit(Measure::UNIT_POINT) / 1.75, 2);
                     $lineColor = $cellBorders->getRight()->getColor()->getRGB();
                     switch ($cellBorders->getRight()->getLineStyle()) {
                         case Border::LINE_SINGLE:
@@ -1164,7 +1167,7 @@ class Content extends AbstractDecoratorWriter
                     $objWriter->writeAttribute('fo:border-right', $lineWidth . 'pt ' . $lineStyle . ' #' . $lineColor);
                     // LEFT
                     $lineStyle = 'none';
-                    $lineWidth = Text::numberFormat($cellBorders->getLeft()->getLineWidth() / 1.75, 2);
+                    $lineWidth = Text::numberFormat($cellBorders->getLeft()->getLineWidth()->getValueForUnit(Measure::UNIT_POINT) / 1.75, 2);
                     $lineColor = $cellBorders->getLeft()->getColor()->getRGB();
                     switch ($cellBorders->getLeft()->getLineStyle()) {
                         case Border::LINE_SINGLE:

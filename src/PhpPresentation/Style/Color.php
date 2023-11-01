@@ -20,6 +20,7 @@ declare(strict_types=1);
 
 namespace PhpOffice\PhpPresentation\Style;
 
+use Exception;
 use PhpOffice\PhpPresentation\ComparableInterface;
 
 /**
@@ -164,6 +165,15 @@ class Color implements ComparableInterface
         $this->argb = $pAlpha . $pValue;
 
         return $this;
+    }
+
+    public static function strToColor(string $strColor) {
+        if (str_starts_with($strColor, '#')) {
+            $color = new Color();
+            $color->setRGB(str_replace('#','',$strColor));
+            return $color;
+        }
+        throw new Exception('CONVERTION NOT IMPLEMENTED');
     }
 
     /**
